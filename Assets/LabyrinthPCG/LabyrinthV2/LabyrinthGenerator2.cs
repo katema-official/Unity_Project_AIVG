@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using PartitioningTree;
+using PartitioningTree2;
 
 public class LabyrinthGenerator2 : MonoBehaviour
 {
@@ -45,11 +45,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
 
     //for repeatability
     public int RandomSeed = 0;
-
-    //just some variables to associate a name to integers, will be useful
-    //in generateNode()
-    private const int horizontalCutID = 0;
-    private const int verticalCutID = 1;
 
     //a matrix to store the walls of the labyrinth
     private MyArray2OfGameObjects wallsArray;
@@ -129,7 +124,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
         if (heightOfNode / 2 >= smallestPartitionX)
         {
             //Debug.Log("Horizontal cut is possible");
-            possibleCutDimensions.Add(horizontalCutID);   //means "you can cut horizontally"
+            possibleCutDimensions.Add(PTConstants.horizontalCutID);   //means "you can cut horizontally"
             //I use "heightOfNode/2" because I want to know if, by dividing the room along this
             //direction by exactly half, I would be able to get two new nodes that can contain
             //a room that respects the minimum X constrain. The same applies for the width,
@@ -139,7 +134,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
         if (widthOfNode / 2 >= smallestPartitionZ)
         {
             //Debug.Log("Vertical cut is possible");
-            possibleCutDimensions.Add(verticalCutID);   //means "you can cut vertically"
+            possibleCutDimensions.Add(PTConstants.verticalCutID);   //means "you can cut vertically"
         }
 
         //check: if the List is still empty, it means that no cut is possible, and we
@@ -156,8 +151,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
 
         //if the list is not empty, we can choose a random cut axis from it
         int i = Random.Range(0, possibleCutDimensions.Count);
-        Debug.Log("i value = " + i);
-        //Debug.Log("possibleCutDimensions.Count = " + possibleCutDimensions.Count);
         int cut = possibleCutDimensions[i];
 
         Debug.Log(depth + "> Axis chosen: " + cut + ", i choose one of " + possibleCutDimensions.Count + " possible values");
@@ -168,16 +161,17 @@ public class LabyrinthGenerator2 : MonoBehaviour
         Point l2;
         Point r1;       //point coordinates for right child
         Point r2;
+        currentNode.cutOrientation = cut;       //to store what kind of cut is the one done on this node
         switch (cut)
         {
-            case horizontalCutID:
+            case PTConstants.horizontalCutID:
                 //so, we have to cut horizontally, but the cut has a constrain:
                 //the two new nodes generated must be large enough for our room.
                 //So the cut can't happen in all places, only in those that can generate
                 //two children big enough.
                 //Same goes for the vertical cut
                 interval = Mathf.Abs(p1.x - p2.x) - smallestPartitionX * 2;
-                int xCoordinateCut = Random.Range(0, interval);
+                int xCoordinateCut = Random.Range(0, interval + 1);
                 xCoordinateCut += smallestPartitionX;
 
                 //now that I have the coordinate for the cut, I can generate the two
@@ -194,9 +188,9 @@ public class LabyrinthGenerator2 : MonoBehaviour
 
                 break;
 
-            case verticalCutID:
+            case PTConstants.verticalCutID:
                 interval = Mathf.Abs(p1.z - p2.z) - smallestPartitionZ * 2;
-                int zCoordinateCut = Random.Range(0, interval);
+                int zCoordinateCut = Random.Range(0, interval + 1);
                 zCoordinateCut += smallestPartitionZ;
 
                 l1 = new Point(p1.z, p1.x);
@@ -300,7 +294,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
 
         }
         maxInclusive -= minLength;  //this way I'm sure that the point I'll give will allow me to generate a room large enough as required
-        return Random.Range(minInclusive, maxInclusive);
+        return Random.Range(minInclusive, maxInclusive + 1);
     }
     
     private int obtainLengthForRoom(int minCoordinate, int minLength, int partitionLength, bool roomsMustBeSeparated, int startingValue)
@@ -311,7 +305,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
             maxValue -= 1;
         }
         //the length of the room has a minimum, and the maximum possible value is the distance between the startingPoint
-        return Random.Range(minLength, Mathf.Abs(maxValue - startingValue));
+        return Random.Range(minLength, Mathf.Abs(maxValue - startingValue) + 1);
         
     }
 

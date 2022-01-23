@@ -4,17 +4,6 @@ using UnityEngine;
 
 namespace PartitioningTree
 {
-    public class PCGPartitioningTree
-    {
-        //the root node representing the entire space allocated for the labyrinth
-        public Node root;
-
-        public PCGPartitioningTree(Node root)
-        {
-            this.root = root;
-        }
-
-    }
 
     //class to represent a point in space
     public class Point
