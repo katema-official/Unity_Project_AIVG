@@ -266,11 +266,11 @@ MonoBehaviour:
   x0: -40
   z1: 40
   x1: 40
-  smallestPartitionZ: 15
-  smallestPartitionX: 15
+  smallestPartitionZ: 12
+  smallestPartitionX: 12
   roomsMustBeSeparated: 1
-  minimumRoomZ: 4
-  minimumRoomX: 4
+  minimumRoomZ: 6
+  minimumRoomX: 6
   RandomSeed: 0
 --- !u!1 &1270552555
 GameObject:

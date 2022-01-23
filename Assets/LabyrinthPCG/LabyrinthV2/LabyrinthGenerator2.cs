@@ -155,10 +155,13 @@ public class LabyrinthGenerator2 : MonoBehaviour
         //Debug.Log("Number of possible axis to perform the cut: " + possibleCutDimensions.Count);
 
         //if the list is not empty, we can choose a random cut axis from it
-        int i = Random.Range(0, possibleCutDimensions.Count - 1);
+        int i = Random.Range(0, possibleCutDimensions.Count);
+        Debug.Log("i value = " + i);
+        //Debug.Log("possibleCutDimensions.Count = " + possibleCutDimensions.Count);
         int cut = possibleCutDimensions[i];
 
-        //Debug.Log("Axis chosen: " + cut);
+        Debug.Log(depth + "> Axis chosen: " + cut + ", i choose one of " + possibleCutDimensions.Count + " possible values");
+        depth += 1;
 
         int interval = 0;
         Point l1;       //point coordinates for left child
@@ -186,6 +189,9 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 currentNode.left_child = generateNode(l1, l2, currentNode);
                 currentNode.right_child = generateNode(r1, r2, currentNode);
 
+                //debug
+                gizmosVectors.Add(new Point[] { new Point(p2.z, p1.x + xCoordinateCut), new Point(p1.z, p1.x + xCoordinateCut) });
+
                 break;
 
             case verticalCutID:
@@ -199,12 +205,17 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 r2 = new Point(p2.z, p2.x);
                 currentNode.left_child = generateNode(l1, l2, currentNode);
                 currentNode.right_child = generateNode(r1, r2, currentNode);
+
+                //debug
+                gizmosVectors.Add(new Point[] { new Point(p1.z + zCoordinateCut, p2.x), new Point(p1.z + zCoordinateCut, p1.x) });
+
                 break;
 
             default:
                 Debug.Log("Something went wrong when deciding on which dimension to cut (should never happen)");
                 break;
         }
+        
         return currentNode;
 
     }
@@ -221,7 +232,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
         {
             //if it is not a leaf node, then explore its childred
 
-            Debug.Log("(" + current.p1.z + "," + current.p1.x + ") -> (" + current.p2.z + "," + current.p2.x + ") recurses");
+            //Debug.Log("(" + current.p1.z + "," + current.p1.x + ") -> (" + current.p2.z + "," + current.p2.x + ") recurses");
             exploreNodeToGenerateRoom(current.left_child);
             exploreNodeToGenerateRoom(current.right_child);
         }
@@ -243,14 +254,16 @@ public class LabyrinthGenerator2 : MonoBehaviour
             //have two rooms that are directly connected to each other, and that's not what
             //I want).
             //So, let's consider those constrains while calculating the room points
-            int room_z0 = obtainStartingCoordinateForRoom(current.p1.z, minimumRoomZ, smallestPartitionZ, roomsMustBeSeparated);
-            int room_x0 = obtainStartingCoordinateForRoom(current.p1.x, minimumRoomX, smallestPartitionX, roomsMustBeSeparated);
+            int actualPartitionZ = Mathf.Abs(current.p1.z - current.p2.z);
+            int actualPartitionX = Mathf.Abs(current.p1.x - current.p2.x);
+            int room_z0 = obtainStartingCoordinateForRoom(current.p1.z, minimumRoomZ, actualPartitionZ, roomsMustBeSeparated);
+            int room_x0 = obtainStartingCoordinateForRoom(current.p1.x, minimumRoomX, actualPartitionX, roomsMustBeSeparated);
             //given the point, I can randomly calculate the length of the room in that axis following the constrains
-            int z_length = obtainLengthForRoom(current.p1.z, minimumRoomZ, smallestPartitionZ, roomsMustBeSeparated, room_z0);
-            int x_length = obtainLengthForRoom(current.p1.x, minimumRoomX, smallestPartitionX, roomsMustBeSeparated, room_x0);
+            int z_length = obtainLengthForRoom(current.p1.z, minimumRoomZ, actualPartitionZ, roomsMustBeSeparated, room_z0);
+            int x_length = obtainLengthForRoom(current.p1.x, minimumRoomX, actualPartitionX, roomsMustBeSeparated, room_x0);
 
-            Debug.LogFormat("In space ({0},{1}) -> ({2},{3}), the chosen point is ({4},{5}) with length <{6},{7}>", current.p1.z, current.p1.x, current.p2.z, current.p2.x,
-                room_z0, room_x0, z_length, x_length);
+            //Debug.LogFormat("In space ({0},{1}) -> ({2},{3}), the chosen point is ({4},{5}) with length <{6},{7}>", current.p1.z, current.p1.x, current.p2.z, current.p2.x,
+            //    room_z0, room_x0, z_length, x_length);
 
             //z_length = 2;
             //x_length = 2;
@@ -260,7 +273,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
             {
                 for (int i = room_z0; i < room_z0 + z_length; i++)
                 {
-                    Debug.Log("Removing (" + i + "," + j + ")");
+                    //Debug.Log("Removing (" + i + "," + j + ")");
                     Destroy(wallsArray.get(i, j));
                     wallsArray.set(i, j, null);
                 }
@@ -300,6 +313,26 @@ public class LabyrinthGenerator2 : MonoBehaviour
         //the length of the room has a minimum, and the maximum possible value is the distance between the startingPoint
         return Random.Range(minLength, Mathf.Abs(maxValue - startingValue));
         
+    }
+
+
+
+
+
+
+    //DEBUG
+    private static List<Point[]> gizmosVectors = new List<Point[]>();
+    private int depth = 0;
+
+    public void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        foreach (Point[] points in gizmosVectors)
+        {
+            Gizmos.DrawLine(
+                new Vector3(points[0].z, 1, points[0].x),
+                new Vector3(points[1].z, 1, points[1].x));
+        }
     }
 
 
