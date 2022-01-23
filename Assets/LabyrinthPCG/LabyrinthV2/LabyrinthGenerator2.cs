@@ -439,61 +439,11 @@ public class LabyrinthGenerator2 : MonoBehaviour
                         {
                             Destroy(wallsArray.get(columnIndex, x));
                             wallsArray.set(columnIndex, x, null);
-                            x++;        //I go upwards
+                            x++;        //I go downwards
                         }
                     }
 
-                    /*
-
-                    //very simple strategy to actually dig this corridor: start from the top. Until you find an empty space, don't dig.
-                    //Then, after finding it, start digging. You will eventually find a wall. From there, keep digging. As soon as you
-                    //find another empty space, it means that you've found the other room. Great, now you can stop digging, at least
-                    //for that column. Let's represent this behaviour using a int, it will suffice.
-
-                    //0 = I still haven't encountered an empty space
-                    //1 = I have found an empty space, so I started digging
-                    //2 = I found a full space, finally I'm digging for real
-                    //3 = I found an empty space, it means that i reached the other room, so I can stop finally.
-                    //the state "3" isn't really ever reached, since, what that happens, the current for is broken (break;)
-                    //and the state goes back to 0.
-                    int state = 0;
-
-
-                    for(int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++) //for all columns...
-                    {
-                        state = 0;
-                        for(int i = minBound; i < maxBound; i++)       //for all the cells inside this column...
-                        {
-                            
-                            if(state == 0 && wallsArray.get(columnIndex, i) == null)
-                            {
-                                //i find the first room
-                                state = 1;
-
-                            }else if(state == 1 && wallsArray.get(columnIndex, i) != null)
-                            {
-                                //i find the wall to actually dig
-                                state = 2;
-                                Destroy(wallsArray.get(columnIndex, i));
-                                wallsArray.set(columnIndex, i, null);       //I destroy this tile
-
-                            }else if(state == 2 && wallsArray.get(columnIndex, i) != null)
-                            {
-                                //I'm digging baby
-                                Destroy(wallsArray.get(columnIndex, i));
-                                wallsArray.set(columnIndex, i, null);       
-
-                            }else if(state == 2 && wallsArray.get(columnIndex, i) == null)
-                            {
-                                //whoops, I dug too much, I reached the other room- wait, that's great! I finished!
-                                state = 0;
-                                
-                            }
-
-                        }
-                    }
-
-                    */
+                    
                 }
                 else
                 {
@@ -507,7 +457,56 @@ public class LabyrinthGenerator2 : MonoBehaviour
 
                 break;
             case PTConstants.verticalCutID:
+                minSearch = Mathf.Min(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,
+                    rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);    //because idk how those two rooms are disposed in the space
+                maxSearch = Mathf.Max(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,
+                    rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);
 
+                List<int> available_X_coordinates = new List<int>();
+                for (int i = minSearch; i < maxSearch; i++)
+                {
+                    if (leftChildRoomPoints[0].x <= i && i <= leftChildRoomPoints[1].x && rightChildRoomPoints[0].x <= i && i <= rightChildRoomPoints[1].x)
+                    {
+                        available_X_coordinates.Add(i);
+                    }
+                }
+
+                if (available_X_coordinates.Count >= corridorWidth)
+                {
+                    int[] boundaryCoordinates = generateDirectCorridorBoundCoordinates(available_X_coordinates, corridorWidth);
+
+                    int zMiddle = current.cutWhere;
+                    int z = 0;
+                    for (int rowIndex = boundaryCoordinates[0]; rowIndex < boundaryCoordinates[1]; rowIndex++)
+                    {
+                        z = zMiddle;
+                        while (wallsArray.get(z, rowIndex) != null)
+                        {
+                            Destroy(wallsArray.get(z, rowIndex));
+                            wallsArray.set(z, rowIndex, null);
+                            z--;        
+                        }
+                    }
+
+                    for (int rowIndex = boundaryCoordinates[0]; rowIndex < boundaryCoordinates[1]; rowIndex++)
+                    {
+                        z = zMiddle + 1;        
+                        while (wallsArray.get(z, rowIndex) != null)
+                        {
+                            Destroy(wallsArray.get(z, rowIndex));
+                            wallsArray.set(z, rowIndex, null);
+                            z++;        
+                        }
+                    }
+
+
+                }
+                else
+                {
+                    Debug.Log("Else");
+                    //or, if that space is NOT enough to contain the randomly generated corridor width,
+                    //is this space enough to contain another corridor, if the user allowed simpler corridors?
+                }
                 break;
         }
         
@@ -524,7 +523,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
     {
         int leftWall = Random.Range(listOfAvailableCoordinates[0], listOfAvailableCoordinates[listOfAvailableCoordinates.Count - 1] - requiredWidth + 1);
         int rightWall = leftWall + requiredWidth;
-        Debug.Log("leftWall = " + leftWall + ", rightWall = " + rightWall);
+        //Debug.Log("leftWall = " + leftWall + ", rightWall = " + rightWall);
         return new int[] { leftWall, rightWall };
     }
 
