@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using PartitioningTree2;
 
-public class LabyrinthGenerator2 : MonoBehaviour
+public class LabyrinthGenerator2CR : MonoBehaviour
 {
     //----------VARIABLES FOR GENERATING THE ROOMS----------
 
@@ -80,7 +80,8 @@ public class LabyrinthGenerator2 : MonoBehaviour
         //Those constrains can't be satisfied, so, when this happens, we simply set
         //roomsMustBeSeparated to false. It is responsibility of the client to give us
         //meaningful values
-        if(minimumRoomZ >= smallestPartitionZ - 1 || minimumRoomX >= smallestPartitionX - 1){
+        if (minimumRoomZ >= smallestPartitionZ - 1 || minimumRoomX >= smallestPartitionX - 1)
+        {
             roomsMustBeSeparated = false;
         }
         //oh and also, if the required minimum room size is greater then the smallest partition value...
@@ -103,7 +104,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
             {
                 GameObject newWall = Instantiate(unit);
                 newWall.transform.position = new Vector3(i + unitScale / 2, 0, j + unitScale / 2);
-                wallsArray.set(j, i, newWall);
+                wallsArray.set(i, j, newWall);
             }
         }
 
@@ -115,7 +116,8 @@ public class LabyrinthGenerator2 : MonoBehaviour
 
 
         //----------CORRIDORS INITIALIZATION----------
-        generateCorridors(root);
+        Stack stack = new Stack();
+        generateCorridors(root, stack);
 
 
     }
@@ -179,6 +181,9 @@ public class LabyrinthGenerator2 : MonoBehaviour
         int i = Random.Range(0, possibleCutDimensions.Count);
         int cut = possibleCutDimensions[i];
 
+        Debug.Log(depth + "> Axis chosen: " + cut + ", i choose one of " + possibleCutDimensions.Count + " possible values");
+        depth += 1;
+
         int interval = 0;
         Point l1;       //point coordinates for left child
         Point l2;
@@ -196,9 +201,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 interval = Mathf.Abs(p1.x - p2.x) - smallestPartitionX * 2;
                 int xCoordinateCut = Random.Range(0, interval + 1);
                 xCoordinateCut += smallestPartitionX;
-
-                //Let's also store the coordinate, on the x axis, of this horizontal cut.
-                currentNode.cutWhere = p1.x + xCoordinateCut;
 
                 //now that I have the coordinate for the cut, I can generate the two
                 //children recursively
@@ -219,8 +221,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 int zCoordinateCut = Random.Range(0, interval + 1);
                 zCoordinateCut += smallestPartitionZ;
 
-                currentNode.cutWhere = p1.z + zCoordinateCut;
-
                 l1 = new Point(p1.z, p1.x);
                 l2 = new Point(p1.z + zCoordinateCut, p2.x);
                 r1 = new Point(p1.z + zCoordinateCut, p1.x);
@@ -237,7 +237,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 Debug.Log("Something went wrong when deciding on which dimension to cut (should never happen)");
                 break;
         }
-        
+
         return currentNode;
 
     }
@@ -321,7 +321,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
         maxInclusive -= minLength;  //this way I'm sure that the point I'll give will allow me to generate a room large enough as required
         return Random.Range(minInclusive, maxInclusive + 1);
     }
-    
+
     private int obtainLengthForRoom(int minCoordinate, int minLength, int partitionLength, bool roomsMustBeSeparated, int startingValue)
     {
         int maxValue = minCoordinate + partitionLength;
@@ -331,7 +331,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
         }
         //the length of the room has a minimum, and the maximum possible value is the distance between the startingPoint
         return Random.Range(minLength, Mathf.Abs(maxValue - startingValue) + 1);
-        
+
     }
 
 
@@ -342,33 +342,30 @@ public class LabyrinthGenerator2 : MonoBehaviour
     //to do that, we use the constrains imposed by the user.
 
     //this recursive function will return to the current node the room coordinates of one of its children
-    private Point[] generateCorridors(Node current)
+    private IEnumerator generateCorridors(Node current, Stack stack)
     {
         //base case: the node doesn't have any child (it is a "full" room, meaning a room where all the points
         //between the upper-left corner and the bottom-right one are part of the room), so he can return those
         //two points. Nothing more. It's great when things are this simple, aren't they?
         if (current.left_child == null && current.right_child == null)
         {
-            return new Point[] {current.room_p1, current.room_p2};
+            stack.Push(new Point[] { current.room_p1, current.room_p2 });
+            yield return null;
         }
 
         //if the node is not a leaf, then, first of all, he must ask to both of his children the upper-left
         //point and lower-left point of their respective rooms, to then merge them together.
-        Point[] leftChildRoomPoints = generateCorridors(current.left_child);
-        Point[] rightChildRoomPoints = generateCorridors(current.right_child);
+        generateCorridors(current.left_child, stack);
+        generateCorridors(current.right_child, stack);
+        Point[] leftChildRoomPoints = (Point[]) stack.Pop();
+        Point[] rightChildRoomPoints = (Point[]) stack.Pop();
 
-        //now we set the two points for this merged room.
-        int minZ = Mathf.Min(leftChildRoomPoints[0].z, leftChildRoomPoints[1].z,
-                    rightChildRoomPoints[0].z, rightChildRoomPoints[1].z);
-        int minX = Mathf.Min(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,
-                    rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);
-        int maxZ = Mathf.Max(leftChildRoomPoints[0].z, leftChildRoomPoints[1].z,
-                    rightChildRoomPoints[0].z, rightChildRoomPoints[1].z);
-        int maxX = Mathf.Max(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,
-                    rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);
-        Point top_left = new Point(minZ, minX);
-        Point bottom_right = new Point(maxZ, maxX);
-        current.setRoomPoints(top_left, bottom_right);
+        yield return new WaitForSeconds(3000);
+
+        //now we set the two points for this merged room:
+        current.setRoomPoints(leftChildRoomPoints[0], rightChildRoomPoints[1]);
+        Debug.Log("My room points are " + current.room_p1.ToString() + " and " + current.room_p2.ToString());
+
 
 
         //now, this is where things get complicated. We have to distingush two scenarios:
@@ -376,16 +373,19 @@ public class LabyrinthGenerator2 : MonoBehaviour
         //2) we have to generate a L shaped corridor (help)
         //but, simple things first: what will be the width of this corridor?
         int corridorWidth = Random.Range(minimumCorridorWidth, maximumCorridorWitdh + 1);
+        Debug.Log("corridorWidth = " + corridorWidth);
 
         //ok, that's the width. Now let's see: if we were to create a direct corridor between these two rooms (the
         //case we are all hoping for), what's the space we have at hand to do that, relatively also to the cut orientation?
         int minSearch = 0;
         int maxSearch = 0;
+        int minBound = 0;
+        int maxBound = 0;
         switch (current.cutOrientation)
         {
             case PTConstants.horizontalCutID:
                 //if the cut was done horizontally, then we have to search all the possible "columns" eligible for building a direct corridor.
-                minSearch = Mathf.Min(leftChildRoomPoints[0].z, leftChildRoomPoints[1].z, 
+                minSearch = Mathf.Min(leftChildRoomPoints[0].z, leftChildRoomPoints[1].z,
                     rightChildRoomPoints[0].z, rightChildRoomPoints[1].z);    //because idk how those two rooms are disposed in the space
                 maxSearch = Mathf.Max(leftChildRoomPoints[0].z, leftChildRoomPoints[1].z,
                     rightChildRoomPoints[0].z, rightChildRoomPoints[1].z);
@@ -393,10 +393,10 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 //now, for each possible z value between the minimum and the maximum, check: is that coordinate, that
                 //represents a column, one on which both rooms lie for at least one unit?
                 List<int> available_Z_coordinates = new List<int>();
-                for(int i = minSearch; i < maxSearch; i++)
+                for (int i = minSearch; i < maxSearch; i++)
                 {
                     //MIGHT (NOT) BE LESS EQUALS
-                    if(leftChildRoomPoints[0].z <= i && i <= leftChildRoomPoints[1].z && rightChildRoomPoints[0].z <= i && i <= rightChildRoomPoints[1].z)
+                    if (leftChildRoomPoints[0].z <= i && i <= leftChildRoomPoints[1].z && rightChildRoomPoints[0].z <= i && i <= rightChildRoomPoints[1].z)
                     {
                         available_Z_coordinates.Add(i);
                     }
@@ -420,10 +420,10 @@ public class LabyrinthGenerator2 : MonoBehaviour
                     //first: dig upwards
                     int xMiddle = current.cutWhere;
                     int x = 0;
-                    for (int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++)
+                    for(int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++)
                     {
                         x = xMiddle;
-                        while (wallsArray.get(columnIndex, x) != null)
+                        while(wallsArray.get(columnIndex, x) != null)
                         {
                             Destroy(wallsArray.get(columnIndex, x));
                             wallsArray.set(columnIndex, x, null);
@@ -443,7 +443,14 @@ public class LabyrinthGenerator2 : MonoBehaviour
                         }
                     }
 
+
                     /*
+                    minBound = Mathf.Min(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,
+                        rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);
+                    maxBound = Mathf.Max(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,
+                        rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);
+
+                    Debug.LogFormat("the current room has coordinates {0} and {1}, and min x = {2}, max x = {3}", current.room_p1.ToString(), current.room_p2.ToString(), minBound, maxBound);
 
                     //very simple strategy to actually dig this corridor: start from the top. Until you find an empty space, don't dig.
                     //Then, after finding it, start digging. You will eventually find a wall. From there, keep digging. As soon as you
@@ -459,48 +466,48 @@ public class LabyrinthGenerator2 : MonoBehaviour
                     int state = 0;
 
 
-                    for(int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++) //for all columns...
+                    for (int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++) //for all columns...
                     {
                         state = 0;
-                        for(int i = minBound; i < maxBound; i++)       //for all the cells inside this column...
+                        for (int i = minBound; i < maxBound; i++)       //for all the cells inside this column...
                         {
-                            
-                            if(state == 0 && wallsArray.get(columnIndex, i) == null)
+
+                            if (state == 0 && wallsArray.get(columnIndex, i) == null)
                             {
                                 //i find the first room
                                 state = 1;
 
-                            }else if(state == 1 && wallsArray.get(columnIndex, i) != null)
+                            }
+                            else if (state == 1 && wallsArray.get(columnIndex, i) != null)
                             {
                                 //i find the wall to actually dig
                                 state = 2;
                                 Destroy(wallsArray.get(columnIndex, i));
                                 wallsArray.set(columnIndex, i, null);       //I destroy this tile
 
-                            }else if(state == 2 && wallsArray.get(columnIndex, i) != null)
+                            }
+                            else if (state == 2 && wallsArray.get(columnIndex, i) != null)
                             {
                                 //I'm digging baby
                                 Destroy(wallsArray.get(columnIndex, i));
-                                wallsArray.set(columnIndex, i, null);       
+                                wallsArray.set(columnIndex, i, null);
 
-                            }else if(state == 2 && wallsArray.get(columnIndex, i) == null)
+                            }
+                            else if (state == 2 && wallsArray.get(columnIndex, i) == null)
                             {
                                 //whoops, I dug too much, I reached the other room- wait, that's great! I finished!
                                 state = 0;
-                                
+
                             }
 
                         }
                     }
 
-                    */
+                */
                 }
-                else
-                {
-                    Debug.Log("Else");
-                    //or, if that space is NOT enough to contain the randomly generated corridor width,
-                    //is this space enough to contain another corridor, if the user allowed simpler corridors?
-                }
+                //or, if that space is NOT enough to contain the randomly generated corridor width,
+                //is this space enough to contain another corridor, if the user allowed simpler corridors?
+
 
 
 
@@ -510,14 +517,14 @@ public class LabyrinthGenerator2 : MonoBehaviour
 
                 break;
         }
-        
+
 
 
 
 
         //in the end, after having merged the two rooms, we can return to our parent the coordinates (in points)
         //of our new room.
-        return new Point[] { current.room_p1, current.room_p2 };
+        //return new Point[] { current.room_p1, current.room_p2 };
     }
 
     private int[] generateDirectCorridorBoundCoordinates(List<int> listOfAvailableCoordinates, int requiredWidth)
@@ -530,7 +537,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
 
 
 
-   
+
 
 
 
@@ -542,29 +549,55 @@ public class LabyrinthGenerator2 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     //VISIBLE DEBUG
     private static List<Point[]> gizmosVectors = new List<Point[]>();
+    private int depth = 0;
 
     public void OnDrawGizmos()
     {
-        
+
         foreach (Point[] points in gizmosVectors)
         {
-            if(points[0].z == points[1].z)
+            if (points[0].z == points[1].z)
             {
                 Gizmos.color = Color.red;
-            }else if(points[0].x == points[1].x)
+            }
+            else if (points[0].x == points[1].x)
             {
                 Gizmos.color = Color.blue;
             }
             Gizmos.DrawLine(
-                new Vector3(points[0].x, 1, points[0].z),
-                new Vector3(points[1].x, 1, points[1].z));
+                new Vector3(points[0].x, 2, points[0].z),
+                new Vector3(points[1].x, 2, points[1].z));
         }
+    }
+}
+
+
+public class StackRecursivePointsArray
+{
+    private List<Point[]> stack;
+
+    public StackRecursivePointsArray()
+    {
+        stack = new List<Point[]>();
+    }
+
+    public void push(Point[] arr)
+    {
+        stack.Add(arr);
+    }
+
+    public Point[] Pop()
+    {
+        Point[] res = stack[stack.Count - 1];
+        stack.RemoveAt(stack.Count - 1);
+        return res;
     }
 
 
 }
+

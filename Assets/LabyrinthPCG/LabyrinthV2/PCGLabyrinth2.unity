@@ -266,12 +266,16 @@ MonoBehaviour:
   x0: -40
   z1: 40
   x1: 40
-  smallestPartitionZ: 12
-  smallestPartitionX: 12
+  smallestPartitionZ: 15
+  smallestPartitionX: 15
   roomsMustBeSeparated: 1
   minimumRoomZ: 6
   minimumRoomX: 6
   RandomSeed: 0
+  minimumCorridorWidth: 1
+  maximumCorridorWitdh: 1
+  angleCorridorsHaveSameWidth: 1
+  allowSimplerCorridors: 0
 --- !u!1 &1270552555
 GameObject:
   m_ObjectHideFlags: 0
@@ -349,13 +353,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1270552555}
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0.5057195, y: -0.49421436, z: 0.49421436, w: 0.5057195}
   m_LocalPosition: {x: 0, y: 90, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 88.682}
 --- !u!114 &1270552559
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -372,3 +376,63 @@ MonoBehaviour:
   XMovementSpeedFraction: 5
   ZMovementSpeedFraction: 5
   YMovementSpeed: 0.5
+--- !u!1 &1812435061
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1812435063}
+  - component: {fileID: 1812435062}
+  m_Layer: 0
+  m_Name: LabyrinthGenerator2CB
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &1812435062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1812435061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c54f835541c07342bd757d109e63162, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  unit: {fileID: 3426741760763179013, guid: b885306ce5789f2418553073ce2aa4dd, type: 3}
+  heightOfWalls: 1
+  unitScale: 1
+  z0: -40
+  x0: -40
+  z1: 40
+  x1: 40
+  smallestPartitionZ: 15
+  smallestPartitionX: 15
+  roomsMustBeSeparated: 1
+  minimumRoomZ: 6
+  minimumRoomX: 6
+  RandomSeed: 0
+  minimumCorridorWidth: 1
+  maximumCorridorWitdh: 1
+  angleCorridorsHaveSameWidth: 1
+  allowSimplerCorridors: 0
+--- !u!4 &1812435063
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1812435061}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 10.37, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
