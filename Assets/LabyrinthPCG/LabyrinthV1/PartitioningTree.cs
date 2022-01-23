@@ -53,24 +53,16 @@ namespace PartitioningTree
 
     //class used for allowing negative index bidimensional arrays of GameObjects
     public class MyArray2OfGameObjects{
-
-        private int minInclusiveZ;
-        private int minInclusiveX;
-        private int maxExclusiveZ;
-        private int maxExclusiveX;
+        
         private GameObject[,] data;
         private int offsetZ;
         private int offsetX;
 
         public MyArray2OfGameObjects(int minimumZ, int maximumZ, int minimumX, int maximumX)
         {
-            minInclusiveZ = minimumZ;
-            minInclusiveX = minimumX;
-            maxExclusiveZ = maximumZ;
-            maxExclusiveX = maximumX;
-            data = new GameObject[maxExclusiveZ - minInclusiveZ, maxExclusiveX - minInclusiveX];
-            offsetZ = 0 - minInclusiveZ;
-            offsetX = 0 - minInclusiveX;
+            data = new GameObject[maximumZ - minimumZ, maximumX - minimumX];
+            offsetZ = 0 - minimumZ;
+            offsetX = 0 - minimumX;
         }
 
         public GameObject get(int z, int x)
