@@ -98,7 +98,14 @@ namespace PartitioningTree2
         {
             data[z + offsetZ, x + offsetX] = obj;
         }
+    }
 
+    enum Directions
+    {
+        up,
+        down,
+        left,
+        right
     }
 
 }

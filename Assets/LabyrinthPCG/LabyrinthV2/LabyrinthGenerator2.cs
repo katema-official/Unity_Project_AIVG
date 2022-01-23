@@ -366,6 +366,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
                     rightChildRoomPoints[0].z, rightChildRoomPoints[1].z);
         int maxX = Mathf.Max(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,
                     rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);
+
         Point top_left = new Point(minZ, minX);
         Point bottom_right = new Point(maxZ, maxX);
         current.setRoomPoints(top_left, bottom_right);
@@ -395,7 +396,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 List<int> available_Z_coordinates = new List<int>();
                 for(int i = minSearch; i < maxSearch; i++)
                 {
-                    //MIGHT (NOT) BE LESS EQUALS
                     if(leftChildRoomPoints[0].z <= i && i < leftChildRoomPoints[1].z && rightChildRoomPoints[0].z <= i && i < rightChildRoomPoints[1].z)
                     {
                         available_Z_coordinates.Add(i);
@@ -416,40 +416,73 @@ public class LabyrinthGenerator2 : MonoBehaviour
                     //1) Given that we know the coordinate of the horizontal cut (a value on the x axis) that is stored on the current node,
                     //we first place ourselves, for each z coordinate that we have (the columns), in that point. Then, we "dig" upwards (removing
                     //all the units we find) untill we find a room. Same goes for digging downwards.
+                    generateHorizontalCorridor(current.cutWhere, boundaryCoordinates);
 
-                    //first: dig upwards
-                    int xMiddle = current.cutWhere;
-                    int x = 0;
-                    for (int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++)
-                    {
-                        x = xMiddle;
-                        while (wallsArray.get(columnIndex, x) != null)
-                        {
-                            Destroy(wallsArray.get(columnIndex, x));
-                            wallsArray.set(columnIndex, x, null);
-                            x--;        //I go upwards
-                        }
-                    }
-
-                    //second, dig downwards
-                    for (int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++)
-                    {
-                        x = xMiddle + 1;        //because we destroyed the units on xMiddle when we dug up
-                        while (wallsArray.get(columnIndex, x) != null)
-                        {
-                            Destroy(wallsArray.get(columnIndex, x));
-                            wallsArray.set(columnIndex, x, null);
-                            x++;        //I go downwards
-                        }
-                    }
-
-                    
                 }
                 else
                 {
-                    Debug.Log("Else");
-                    //or, if that space is NOT enough to contain the randomly generated corridor width,
-                    //is this space enough to contain another corridor, if the user allowed simpler corridors?
+                    if (allowSimplerCorridors) 
+                    {
+                        //or, if that space is NOT enough to contain the randomly generated corridor width:
+                        //is this space enough to contain another corridor, if the user allowed simpler corridors?
+                        int[] boundaryCoordinates = new int[] { available_Z_coordinates[0], available_Z_coordinates[available_Z_coordinates.Count - 1] };
+                        generateHorizontalCorridor(current.cutWhere, boundaryCoordinates);
+                    }
+                    else
+                    {
+                        //this is where things get reaaaaally messy, because it is explicitly required to create a L-shaped corridor.
+                        //It is in general not easy, because, to do this, we have to make some calculations based on the position of the two rooms.
+                        //We'll also have to distinguish two kind of corridors: the ones that have the a constant width, and those that can have
+                        //two different widths. It depends on the variable angleCorridorsHaveSameWidth.
+                        //So... let's start by getting an idea of where are those rooms placed.
+                        //In general, those two rooms can be:
+                        //1) the one on the left is in the upper part of the cut, the right one is in the lowe part
+                        //2) viceversa
+                        //To make the results more random, we'll start from the room on the left and randomly decide if we want to dig
+                        //to the right (and then up/downm) or up/down (and then to the right)
+                        //Note that, in some occasions, we might need to dig, say, to the right, then down, then to the left.
+                        //example: upper-left room with coordinates (0,0) - (10,10), lower-right with coordinates (0,20) - (5-25), and
+                        //the random algorithm decided to dig to the right as first thing.
+
+                        Point[] roomOnTheLeft;
+                        Point[] roomOnTheRight;
+
+                        if(leftChildRoomPoints[0].z <= rightChildRoomPoints[0].z)
+                        {
+                            roomOnTheLeft = leftChildRoomPoints;
+                            roomOnTheRight = rightChildRoomPoints;
+                        }
+                        else
+                        {
+                            roomOnTheLeft = rightChildRoomPoints;
+                            roomOnTheRight = leftChildRoomPoints;
+                        }
+
+
+                        //now all the calculation rely on the fact that the room on the left is above or below the one on the right
+                        if(roomOnTheLeft[0].x <= roomOnTheRight[0].x)
+                        {
+                            //the room on the left is above the one on the right. Choose a random direction to dig between right and down.
+                            Directions[] possibleDirections = new Directions[] { Directions.down, Directions.right };
+                            Directions chosenDir = possibleDirections[Random.Range(0, possibleDirections.Length)];
+
+
+                        }
+                        else
+                        {
+                            //the room on the left is below the one on the right. Choose a random direction to dig between right and up.
+                            Directions[] possibleDirections = new Directions[] { Directions.up, Directions.right };
+                            Directions chosenDir = possibleDirections[Random.Range(0, possibleDirections.Length)];
+                        }
+                        
+
+
+
+
+
+                    }
+
+
                 }
 
 
@@ -474,38 +507,15 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 if (available_X_coordinates.Count >= corridorWidth)
                 {
                     int[] boundaryCoordinates = generateDirectCorridorBoundCoordinates(available_X_coordinates, corridorWidth);
-
-                    int zMiddle = current.cutWhere;
-                    int z = 0;
-                    for (int rowIndex = boundaryCoordinates[0]; rowIndex < boundaryCoordinates[1]; rowIndex++)
-                    {
-                        z = zMiddle;
-                        while (wallsArray.get(z, rowIndex) != null)
-                        {
-                            Destroy(wallsArray.get(z, rowIndex));
-                            wallsArray.set(z, rowIndex, null);
-                            z--;        
-                        }
-                    }
-
-                    for (int rowIndex = boundaryCoordinates[0]; rowIndex < boundaryCoordinates[1]; rowIndex++)
-                    {
-                        z = zMiddle + 1;        
-                        while (wallsArray.get(z, rowIndex) != null)
-                        {
-                            Destroy(wallsArray.get(z, rowIndex));
-                            wallsArray.set(z, rowIndex, null);
-                            z++;        
-                        }
-                    }
-
-
+                    generateVerticalCorridor(current.cutWhere, boundaryCoordinates);
                 }
                 else
                 {
-                    Debug.Log("Else");
-                    //or, if that space is NOT enough to contain the randomly generated corridor width,
-                    //is this space enough to contain another corridor, if the user allowed simpler corridors?
+                    if (allowSimplerCorridors)
+                    {
+                        int[] boundaryCoordinates = new int[] { available_X_coordinates[0], available_X_coordinates[available_X_coordinates.Count - 1] };
+                        generateVerticalCorridor(current.cutWhere, boundaryCoordinates);
+                    }
                 }
                 break;
         }
@@ -525,6 +535,62 @@ public class LabyrinthGenerator2 : MonoBehaviour
         int rightWall = leftWall + requiredWidth;
         //Debug.Log("leftWall = " + leftWall + ", rightWall = " + rightWall);
         return new int[] { leftWall, rightWall };
+    }
+
+
+    private void generateHorizontalCorridor(int xMiddle, int[] boundaryCoordinates)
+    {
+        //first: dig upwards (or to the left)
+
+        int x = 0;
+        for (int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++)
+        {
+            x = xMiddle;
+            while (wallsArray.get(columnIndex, x) != null)
+            {
+                Destroy(wallsArray.get(columnIndex, x));
+                wallsArray.set(columnIndex, x, null);
+                x--;        //I go upwards
+            }
+        }
+
+        //second, dig downwards
+        for (int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++)
+        {
+            x = xMiddle + 1;        //because we destroyed the units on xMiddle when we dug up
+            while (wallsArray.get(columnIndex, x) != null)
+            {
+                Destroy(wallsArray.get(columnIndex, x));
+                wallsArray.set(columnIndex, x, null);
+                x++;        //I go downwards
+            }
+        }
+    }
+
+    private void generateVerticalCorridor(int zMiddle, int[] boundaryCoordinates)
+    {
+        int z = 0;
+        for (int rowIndex = boundaryCoordinates[0]; rowIndex < boundaryCoordinates[1]; rowIndex++)
+        {
+            z = zMiddle;
+            while (wallsArray.get(z, rowIndex) != null)
+            {
+                Destroy(wallsArray.get(z, rowIndex));
+                wallsArray.set(z, rowIndex, null);
+                z--;
+            }
+        }
+
+        for (int rowIndex = boundaryCoordinates[0]; rowIndex < boundaryCoordinates[1]; rowIndex++)
+        {
+            z = zMiddle + 1;
+            while (wallsArray.get(z, rowIndex) != null)
+            {
+                Destroy(wallsArray.get(z, rowIndex));
+                wallsArray.set(z, rowIndex, null);
+                z++;
+            }
+        }
     }
 
 
