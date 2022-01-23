@@ -396,7 +396,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 for(int i = minSearch; i < maxSearch; i++)
                 {
                     //MIGHT (NOT) BE LESS EQUALS
-                    if(leftChildRoomPoints[0].z <= i && i <= leftChildRoomPoints[1].z && rightChildRoomPoints[0].z <= i && i <= rightChildRoomPoints[1].z)
+                    if(leftChildRoomPoints[0].z <= i && i < leftChildRoomPoints[1].z && rightChildRoomPoints[0].z <= i && i < rightChildRoomPoints[1].z)
                     {
                         available_Z_coordinates.Add(i);
                     }
@@ -465,7 +465,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 List<int> available_X_coordinates = new List<int>();
                 for (int i = minSearch; i < maxSearch; i++)
                 {
-                    if (leftChildRoomPoints[0].x <= i && i <= leftChildRoomPoints[1].x && rightChildRoomPoints[0].x <= i && i <= rightChildRoomPoints[1].x)
+                    if (leftChildRoomPoints[0].x <= i && i < leftChildRoomPoints[1].x && rightChildRoomPoints[0].x <= i && i < rightChildRoomPoints[1].x)
                     {
                         available_X_coordinates.Add(i);
                     }
