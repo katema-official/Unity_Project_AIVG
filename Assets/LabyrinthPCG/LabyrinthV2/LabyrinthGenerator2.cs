@@ -585,9 +585,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
     private bool Dig(int startZ, int startX, int distanceToDig, Directions direction, bool reachStartingRoom, bool reachEndingRoom)
     {
 
-        
-        Debug.Log("DEVO ESSERE CHIAMATA 8 VOLTE");
-
         switch (direction)
         {
             case Directions.up:
@@ -604,13 +601,15 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 }
 
                 //now we actually dig up
-                for(int i = 0; i >= -distanceToDig; i--)
+                for(int i = 0; i > -distanceToDig; i--)
                 {
                     if(wallsArray.get(startZ, startX + i) != null)
                     {
                         Destroy(wallsArray.get(startZ, startX + i));
                         wallsArray.set(startZ, startX + i, null);
-                    }else{return true;}
+                    }else
+                    {
+                        return true;}
 
                 }
 
@@ -641,7 +640,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
                     }
                 }
 
-                //MIGHT BE J = 1, AND THE ABOVE J = 0, OCHO (AND THE ONE BELOW J = 1 TOO)
                 for (int j = 0; j < distanceToDig; j++)
                 {
                     if(wallsArray.get(startZ + j, startX) != null)
@@ -676,8 +674,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
                         i++;
                     }
                 }
-
-                //Debug.LogFormat("Digging down with: {0},{1},{2} and {3}", startZ, startX, distanceToDig, direction);
 
                 for (int i = 0; i < distanceToDig; i++)
                 {
@@ -714,20 +710,13 @@ public class LabyrinthGenerator2 : MonoBehaviour
                     }
                 }
 
-                Debug.LogFormat("Digging LEFT with: {0},{1},{2} and {3}", startZ, startX, distanceToDig, direction);
-
-                for (int j = 0; j >= -distanceToDig; j--)
-                {
-                    Debug.LogFormat("j = {0}, -distanceToDig = {1}. The cube I WANT != NULL is ({2},{3})", j, -distanceToDig, startZ + j, startX);
-      
+                for (int j = 0; j > -distanceToDig; j--)
+                {      
                     if (wallsArray.get(startZ + j, startX) != null)
                     {
-                        //Debug.LogFormat("Currently destroyed cube: ({0},{1})", startZ + j, startX);
                         Destroy(wallsArray.get(startZ + j, startX));
                         wallsArray.set(startZ + j, startX, null);
-                    }else{
-                        Debug.LogFormat("I FINISHED BECAUSE IT WAS NULL -> ({0},{1})", startZ + j, startX);
-                        return true;}
+                    }else{return true;}
                 }
 
                 if (reachEndingRoom)
@@ -773,8 +762,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
             //same thing as before.
             secondCorridorWidth = Mathf.Min(secondCorridorWidth, rightRoom[1].x - rightRoom[0].x);
 
-            Debug.Log("Secondcorridor = " + secondCorridorWidth);
-
             //dig down, as much as requried to have the corridors we want + eventually a random offset.
             necessaryDig1 = rightRoom[0].x - leftRoom[1].x;  //NB: it has to be >= 0, since we are dealing with two rooms separated by a horizontal cut.
             necessaryDig2 = secondCorridorWidth;
@@ -782,10 +769,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
 
             //decide where to build the tunnel
             int zToStart = Random.Range(leftRoom[0].z, leftRoom[1].z - firstCorridorWidth + 1);     //TODO: the starting point non deve superare il punto alto sx della stanza in basso
-
-            //Debug.LogFormat("leftRoom: ({0},{1}), rightRoom: ({2},{3})", leftRoom[0].z, leftRoom[0].x, rightRoom[0].z, rightRoom[0].x);
-            //Debug.LogFormat("Digging down, you have necessaryDig1 = {0}, necessaryDig2 = {1}, randomDig = {2}", necessaryDig1, necessaryDig2, randomDig);
-            //Debug.LogFormat("firstCorridorW = {0}, secondCorridorW = {1}", firstCorridorWidth, secondCorridorWidth);
 
             //now that we have our starting point, the width and the depth of the tunnel, we can dig the tunnels.
             for (int i = 0; i < firstCorridorWidth; i++)
@@ -800,13 +783,13 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 //and, by digging to the left, reaches our previously created corridor, in such a way to form a L-shaped corridor.
                 int xToStart = rightRoom[0].x + randomDig;
 
-                for (int j = 0; j < secondCorridorWidth; j++)               //QUESTO CICLO VIENE ESEGUITO secondCorridorWidth VOLTE
+                for (int j = 0; j < secondCorridorWidth; j++)               
                 {
-                    Debug.LogFormat("j = {0}, secondCorridorWidth = {1}", j, secondCorridorWidth);
-                    Debug.Log("rightRoom[0].z - zToStart + firstCorridorWidth = " + (rightRoom[0].z - zToStart + firstCorridorWidth));
-                    finished = Dig(rightRoom[0].z - 1, xToStart + j, rightRoom[0].z - zToStart + firstCorridorWidth, Directions.left, false, false) || finished;
+                    finished = Dig(rightRoom[0].z - 1, xToStart + j, rightRoom[0].z - (zToStart + firstCorridorWidth), Directions.left, false, false) || finished;
                 }
             }
+
+            
 
             //debug
             LVectors.Add(new Point[] { new Point(leftRoom[0].z, leftRoom[0].x) , new Point(rightRoom[0].z, rightRoom[0].x)});
@@ -838,7 +821,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
 
                 for (int j = 0; j < secondCorridorWidth; j++)
                 {
-                    Debug.Log("WEEEEEEEEEEE");
                     finished = Dig(rightRoom[0].z - 1, xToStart + j, rightRoom[0].z - zToStart + firstCorridorWidth, Directions.left, false, false) || finished;
                 }
             }
