@@ -266,12 +266,12 @@ MonoBehaviour:
   x0: -40
   z1: 40
   x1: 40
-  smallestPartitionZ: 20
-  smallestPartitionX: 20
+  smallestPartitionZ: 15
+  smallestPartitionX: 15
   roomsMustBeSeparated: 1
   minimumRoomZ: 3
   minimumRoomX: 3
-  RandomSeed: 0
+  RandomSeed: -1329654886
   minimumCorridorWidth: 1
   maximumCorridorWitdh: 2
   angleCorridorsHaveSameWidth: 1
