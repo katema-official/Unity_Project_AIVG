@@ -271,7 +271,7 @@ MonoBehaviour:
   roomsMustBeSeparated: 1
   minimumRoomZ: 6
   minimumRoomX: 6
-  RandomSeed: 0
+  RandomSeed: -1418526905
   minimumCorridorWidth: 5
   maximumCorridorWitdh: 5
   angleCorridorsHaveSameWidth: 1

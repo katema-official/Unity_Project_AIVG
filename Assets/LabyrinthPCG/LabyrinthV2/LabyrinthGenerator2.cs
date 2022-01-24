@@ -416,7 +416,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
                     //1) Given that we know the coordinate of the horizontal cut (a value on the x axis) that is stored on the current node,
                     //we first place ourselves, for each z coordinate that we have (the columns), in that point. Then, we "dig" upwards (removing
                     //all the units we find) untill we find a room. Same goes for digging downwards.
-                    generateHorizontalCorridor(current.cutWhere, boundaryCoordinates);
+                    generateHorizontalCorridorFromCut(current.cutWhere, boundaryCoordinates);
 
                 }
                 else
@@ -426,20 +426,20 @@ public class LabyrinthGenerator2 : MonoBehaviour
                         //or, if that space is NOT enough to contain the randomly generated corridor width:
                         //is this space enough to contain another corridor, if the user allowed simpler corridors?
                         int[] boundaryCoordinates = new int[] { available_Z_coordinates[0], available_Z_coordinates[available_Z_coordinates.Count - 1] };
-                        generateHorizontalCorridor(current.cutWhere, boundaryCoordinates);
+                        generateHorizontalCorridorFromCut(current.cutWhere, boundaryCoordinates);
                     }
                     else
                     {
-                        //this is where things get reaaaaally messy, because it is explicitly required to create a L-shaped corridor.
+                        //this is where things get reaaaaally messy, because it is explicitly required to create a L-shaped corridor (also, eventually, U-shaped).
                         //It is in general not easy, because, to do this, we have to make some calculations based on the position of the two rooms.
                         //We'll also have to distinguish two kind of corridors: the ones that have the a constant width, and those that can have
-                        //two different widths. It depends on the variable angleCorridorsHaveSameWidth.
-                        //So... let's start by getting an idea of where are those rooms placed.
+                        //two (or more) different widths. It depends on the variable angleCorridorsHaveSameWidth.
+                        //So... let's start by getting an idea of where those rooms are placed.
                         //In general, those two rooms can be:
                         //1) the one on the left is in the upper part of the cut, the right one is in the lowe part
                         //2) viceversa
                         //To make the results more random, we'll start from the room on the left and randomly decide if we want to dig
-                        //to the right (and then up/downm) or up/down (and then to the right)
+                        //to the right (and then up/downm) or up/down (and then to the right).
                         //Note that, in some occasions, we might need to dig, say, to the right, then down, then to the left.
                         //example: upper-left room with coordinates (0,0) - (10,10), lower-right with coordinates (0,20) - (5-25), and
                         //the random algorithm decided to dig to the right as first thing.
@@ -458,13 +458,70 @@ public class LabyrinthGenerator2 : MonoBehaviour
                             roomOnTheRight = leftChildRoomPoints;
                         }
 
-
                         //now all the calculation rely on the fact that the room on the left is above or below the one on the right
                         if(roomOnTheLeft[0].x <= roomOnTheRight[0].x)
                         {
                             //the room on the left is above the one on the right. Choose a random direction to dig between right and down.
                             Directions[] possibleDirections = new Directions[] { Directions.down, Directions.right };
                             Directions chosenDir = possibleDirections[Random.Range(0, possibleDirections.Length)];
+
+                            //We have to distinguish two scenarios, now:
+                            //1) we dig down. Then, we might have to dig to the right.
+                            //2) we dig to the right. Then, we might have to dig down, and then, maybe, to the left.
+                            int necessaryDig;
+                            int randomDig;
+                            bool finished = false;
+                            if (chosenDir == Directions.down)
+                            {
+                                //now, dig in that direction. How much? Well, enough that you will have below you/to your right
+                                //the other room, but then you can dig some more, if you want.
+                                necessaryDig = roomOnTheLeft[1].x - roomOnTheRight[0].x;  //NB: it has to be >= 0, since we are dealing with two rooms separated by a horizontal cut.   
+                                randomDig = Random.Range(0, roomOnTheRight[1].x - roomOnTheRight[0].x);
+
+                                //we have to dig a tunnel large as corridorWidth first, so not all places are elegible to begin.
+                                //And what if the tunnel to generate is larger then the wall? Well, in this case, there's nothing we can do:
+                                //we'll dig a tunnel large as the available wall.
+                                corridorWidth = leftChildRoomPoints[1].z - leftChildRoomPoints[0].z >= corridorWidth ? corridorWidth : leftChildRoomPoints[1].z - leftChildRoomPoints[0].z;
+
+                                //if the corridor is as large as the walls distance, we have to start from the point on the left, and we can't generate a random value.
+                                int zToStart = corridorWidth == leftChildRoomPoints[1].z - leftChildRoomPoints[0].z ?
+                                    leftChildRoomPoints[0].z :
+                                    Random.Range(leftChildRoomPoints[0].z, leftChildRoomPoints[1].z - corridorWidth);
+
+                                //now that we have our starting point and the width, we can dig the tunnels.
+                                for (int i = 0; i < corridorWidth; i++) {
+                                    finished = finished || Dig(zToStart + i, leftChildRoomPoints[1].x, necessaryDig + randomDig, Directions.down, true, false);
+                                }
+
+                                //have we already reached the room? then, stop. Else, we have to dig to the right.
+                                if (!finished)
+                                {
+                                    //did the user want those kind of corridors of the same width? Or of different width?
+                                    int oldWidth = corridorWidth;
+                                    corridorWidth = angleCorridorsHaveSameWidth ? corridorWidth : Random.Range(minimumCorridorWidth, maximumCorridorWitdh + 1);
+
+                                    //now, dig to the right, in such a way to create a L-shaped curve.
+                                    for(int j = -1; j <= -corridorWidth; j--)
+                                    {
+                                        //here we know we'll touch the other room, so the distanceToDig can be set to 0
+
+                                        necessaryDig = roomOnTheRight[0].z - zToStart - oldWidth;  
+                                        randomDig = Random.Range(0, roomOnTheRight[1].x - roomOnTheRight[0].x);
+                                        Dig(zToStart + oldWidth, leftChildRoomPoints[1].x + necessaryDig + randomDig + j, 0, Directions.right, false, true);
+                                    }
+                                }
+
+
+
+                            }
+                            else if(chosenDir == Directions.right)
+                            {
+                                
+                                necessaryDig = Mathf.Abs(roomOnTheRight[1].z - roomOnTheLeft[0].z);     
+                                randomDig = Random.Range(0, roomOnTheRight[1].z - roomOnTheRight[0].z);
+                            }
+                            
+
 
 
                         }
@@ -507,14 +564,14 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 if (available_X_coordinates.Count >= corridorWidth)
                 {
                     int[] boundaryCoordinates = generateDirectCorridorBoundCoordinates(available_X_coordinates, corridorWidth);
-                    generateVerticalCorridor(current.cutWhere, boundaryCoordinates);
+                    generateVerticalCorridorFromCut(current.cutWhere, boundaryCoordinates);
                 }
                 else
                 {
                     if (allowSimplerCorridors)
                     {
                         int[] boundaryCoordinates = new int[] { available_X_coordinates[0], available_X_coordinates[available_X_coordinates.Count - 1] };
-                        generateVerticalCorridor(current.cutWhere, boundaryCoordinates);
+                        generateVerticalCorridorFromCut(current.cutWhere, boundaryCoordinates);
                     }
                 }
                 break;
@@ -538,7 +595,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
     }
 
 
-    private void generateHorizontalCorridor(int xMiddle, int[] boundaryCoordinates)
+    private void generateHorizontalCorridorFromCut(int xMiddle, int[] boundaryCoordinates)
     {
         //first: dig upwards (or to the left)
 
@@ -567,7 +624,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
         }
     }
 
-    private void generateVerticalCorridor(int zMiddle, int[] boundaryCoordinates)
+    private void generateVerticalCorridorFromCut(int zMiddle, int[] boundaryCoordinates)
     {
         int z = 0;
         for (int rowIndex = boundaryCoordinates[0]; rowIndex < boundaryCoordinates[1]; rowIndex++)
@@ -593,9 +650,173 @@ public class LabyrinthGenerator2 : MonoBehaviour
         }
     }
 
+    //function that, given a starting point (z,x), a distance to dig and a direction to dig, will start digging
+    //in that direction until:
+    //1) It has dug as much as required. In this case, it returns false.
+    //2) It has found an empty space (a room). In this case, it returns true.
+
+    //there is a small problem here, for how we have built all of this: we have to consider that,
+    //sometimes, the starting coordinates are not in contact with an empty space (that is, the actual room).
+    //The same can happen when it stops to dig, and we assumed we found a room.
+    //When that happens, this dig function should make sure to connect the tunnel tho the room we have in mind.
+    //for this reason, I add two booleans:
+    //1) reachStartingRoom: true when we have just started to dig and we want to make sure the tunnel is actually connected
+    //to our starting room.
+    //2) reachEndingRoom: true when we assume that this tunnel will be the last one we have to dig in order to reach
+    //the destination room. 
+    private bool Dig(int startZ, int startX, int distanceToDig, Directions direction, bool reachStartingRoom, bool reachEndingRoom)
+    {
+        switch (direction)
+        {
+            case Directions.up:
+                //we want to dig up, but we want to make sure we are connected to a room. To do that, we first dig down 'till we find an empty space.
+                if (reachStartingRoom)
+                {
+                    int i = 1;
+                    while (wallsArray.get(startZ, startX + i) != null)
+                    {
+                        Destroy(wallsArray.get(startZ, startX + i));
+                        wallsArray.set(startZ, startX + i, null);
+                        i++;
+                    }
+                }
+
+                //now we actually dig up
+                for(int i = 0; i > -distanceToDig; i--)
+                {
+                    if(wallsArray.get(startZ, startX + i) != null)
+                    {
+                        Destroy(wallsArray.get(startZ, startX + i));
+                        wallsArray.set(startZ, startX + i, null);
+                    }else{return true;}
+
+                }
+
+                //the client wants us to make sure we've reached a room, while digging up.
+                if (reachEndingRoom)
+                {
+                    int i = 0;
+                    while (wallsArray.get(startZ, startX - distanceToDig - i) != null)
+                    {
+                        Destroy(wallsArray.get(startZ, startX - distanceToDig - i));
+                        wallsArray.set(startZ, startX - distanceToDig - i, null);
+                        i++;
+                    }
+                    return true;
+                }
+
+                break;
+
+            case Directions.right:
+                if (reachStartingRoom)
+                {
+                    int j = 1;
+                    while (wallsArray.get(startZ - j, startX) != null)
+                    {
+                        Destroy(wallsArray.get(startZ - j, startX));
+                        wallsArray.set(startZ - j, startX, null);
+                        j++;
+                    }
+                }
+
+                //MIGHT BE J = 1, AND THE ABOVE J = 0, OCHO (AND THE ONE BELOW J = 1 TOO)
+                for (int j = 0; j < distanceToDig; j++)
+                {
+                    if(wallsArray.get(startZ + j, startX) != null)
+                    {
+                        Destroy(wallsArray.get(startZ + j, startX));
+                        wallsArray.set(startZ + j, startX, null);
+                    }else{return true;}
+                }
+
+                if (reachEndingRoom)
+                {
+                    int j = 0;
+                    while (wallsArray.get(startZ + distanceToDig + j, startX) != null)
+                    {
+                        Destroy(wallsArray.get(startZ + distanceToDig + j, startX));
+                        wallsArray.set(startZ + distanceToDig + j, startX, null);
+                        j++;
+                    }
+                    return true;
+                }
+
+                break;
+
+            case Directions.down:
+                if (reachStartingRoom)
+                {
+                    int i = 1;
+                    while (wallsArray.get(startZ, startX - i) != null)
+                    {
+                        Destroy(wallsArray.get(startZ, startX - i));
+                        wallsArray.set(startZ, startX - i, null);
+                        i++;
+                    }
+                }
+
+                for (int i = 0; i < distanceToDig; i++)
+                {
+                    if (wallsArray.get(startZ, startX + i) != null)
+                    {
+                        Destroy(wallsArray.get(startZ, startX + i));
+                        wallsArray.set(startZ, startX + i, null);
+                    }else{return true;}
+                }
+
+                if (reachEndingRoom)
+                {
+                    int i = 0;
+                    while (wallsArray.get(startZ, startX + distanceToDig + i) != null)
+                    {
+                        Destroy(wallsArray.get(startZ, startX + distanceToDig + i));
+                        wallsArray.set(startZ, startX + distanceToDig + i, null);
+                        i++;
+                    }
+                    return true;
+                }
+
+                break;
+
+            case Directions.left:
+                if (reachStartingRoom)
+                {
+                    int j = 1;
+                    while (wallsArray.get(startZ + j, startX) != null)
+                    {
+                        Destroy(wallsArray.get(startZ + j, startX));
+                        wallsArray.set(startZ + j, startX, null);
+                        j++;
+                    }
+                }
+
+                for (int j = 0; j > -distanceToDig; j--)
+                {
+                    if (wallsArray.get(startZ + j, startX) != null)
+                    {
+                        Destroy(wallsArray.get(startZ + j, startX));
+                        wallsArray.set(startZ + j, startX, null);
+                    }else{return true;}
+                }
+
+                if (reachEndingRoom)
+                {
+                    int j = 0;
+                    while (wallsArray.get(startZ - distanceToDig - j, startX) != null)
+                    {
+                        Destroy(wallsArray.get(startZ - distanceToDig - j, startX));
+                        wallsArray.set(startZ - distanceToDig - j, startX, null);
+                        j++;
+                    }
+                    return true;
+                }
+
+                break;
+        }
+        return false;
+    }
 
 
-   
 
 
 
