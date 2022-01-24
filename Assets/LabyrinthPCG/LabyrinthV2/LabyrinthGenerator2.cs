@@ -421,7 +421,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 }
                 else
                 {
-                    if (allowSimplerCorridors) 
+                    if (allowSimplerCorridors && available_Z_coordinates.Count >= minimumCorridorWidth) 
                     {
                         //or, if that space is NOT enough to contain the randomly generated corridor width:
                         //is this space enough to contain another corridor, if the user allowed simpler corridors?
@@ -430,19 +430,15 @@ public class LabyrinthGenerator2 : MonoBehaviour
                     }
                     else
                     {
-                        //this is where things get reaaaaally messy, because it is explicitly required to create a L-shaped corridor (also, eventually, U-shaped).
+                        //this is where things get reaaaaally messy, because it is explicitly required to create a L-shaped corridor 
                         //It is in general not easy, because, to do this, we have to make some calculations based on the position of the two rooms.
                         //We'll also have to distinguish two kind of corridors: the ones that have the a constant width, and those that can have
-                        //two (or more) different widths. It depends on the variable angleCorridorsHaveSameWidth.
+                        //two different widths. It depends on the variable angleCorridorsHaveSameWidth.
                         //So... let's start by getting an idea of where those rooms are placed.
                         //In general, those two rooms can be:
                         //1) the one on the left is in the upper part of the cut, the right one is in the lowe part
                         //2) viceversa
-                        //To make the results more random, we'll start from the room on the left and randomly decide if we want to dig
-                        //to the right (and then up/downm) or up/down (and then to the right).
-                        //Note that, in some occasions, we might need to dig, say, to the right, then down, then to the left.
-                        //example: upper-left room with coordinates (0,0) - (10,10), lower-right with coordinates (0,20) - (5-25), and
-                        //the random algorithm decided to dig to the right as first thing.
+                        //According to this displacement, we'll have to dig first down or up, and then, in both cases, to the right.
 
                         Point[] roomOnTheLeft;
                         Point[] roomOnTheRight;
@@ -457,6 +453,8 @@ public class LabyrinthGenerator2 : MonoBehaviour
                             roomOnTheLeft = rightChildRoomPoints;
                             roomOnTheRight = leftChildRoomPoints;
                         }
+
+                        DigLShapedCorridorForHorizontalCut(roomOnTheLeft, roomOnTheRight, corridorWidth);
 
                         //now all the calculation rely on the fact that the room on the left is above or below the one on the right
                         if(roomOnTheLeft[0].x <= roomOnTheRight[0].x)
@@ -506,7 +504,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
                                         //here we know we'll touch the other room, so the distanceToDig can be set to 0
 
                                         necessaryDig = roomOnTheRight[0].z - zToStart - oldWidth;  
-                                        randomDig = Random.Range(0, roomOnTheRight[1].x - roomOnTheRight[0].x);
                                         Dig(zToStart + oldWidth, leftChildRoomPoints[1].x + necessaryDig + randomDig + j, 0, Directions.right, false, true);
                                     }
                                 }
@@ -568,7 +565,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 }
                 else
                 {
-                    if (allowSimplerCorridors)
+                    if (allowSimplerCorridors && available_X_coordinates.Count >= minimumCorridorWidth)
                     {
                         int[] boundaryCoordinates = new int[] { available_X_coordinates[0], available_X_coordinates[available_X_coordinates.Count - 1] };
                         generateVerticalCorridorFromCut(current.cutWhere, boundaryCoordinates);
@@ -816,7 +813,91 @@ public class LabyrinthGenerator2 : MonoBehaviour
         return false;
     }
 
+    //function to dig an L-shaped corridor between two rooms separated by a horizontal cut
+    private void DigLShapedCorridorForHorizontalCut(Point[] leftRoom, Point[] rightRoom, int corridorWidth)
+    {
+        int necessaryDig1;
+        int necessaryDig2;
+        int randomDig;
+        bool finished = false;
 
+        //the left room is above the right one
+        if (leftRoom[0].x <= rightRoom[0].x)
+        {
+            //we have to dig down first, and then (maybe) to the right.
+
+            //much depends on whether the user wants those corridors to have the same width or they can have two different widths.
+            //Now, while we have allowed a certain level of generality and freedom up until now, to actually build this freakin corridor,
+            //we now have to impose our own rules. If we are required to build a corridor large 5, but the room's length along the z axis
+            //is 2, we simply can't have a corridor like that! So, to make our lives simpler, here we are allowed to break, if necessary,
+            //the minimum corridor width constrains imposed by the client. After all it is him who gave us unreasonable values, come on.
+            int firstCorridorWidth = Mathf.Min(corridorWidth, leftRoom[1].z, leftRoom[0].z);
+
+            //the second corridor can be randomly generated, or not
+            int secondCorridorWidth = angleCorridorsHaveSameWidth ? firstCorridorWidth : Random.Range(minimumCorridorWidth, maximumCorridorWitdh + 1);
+
+            //same thing as before.
+            secondCorridorWidth = Mathf.Min(secondCorridorWidth, rightRoom[1].x - rightRoom[0].x);
+
+            //dig down, as much as requried to have the corridors we want + eventually a random offset.
+            necessaryDig1 = leftRoom[1].x - rightRoom[0].x;  //NB: it has to be >= 0, since we are dealing with two rooms separated by a horizontal cut.
+            necessaryDig2 = secondCorridorWidth;
+            randomDig = Random.Range(0, rightRoom[1].x - rightRoom[0].x - necessaryDig2 + 1);
+
+            //decide where to build the tunnel
+            int zToStart = Random.Range(leftRoom[0].z, leftRoom[1].z - firstCorridorWidth + 1);
+
+            //now that we have our starting point, the width and the depth of the tunnel, we can dig the tunnels.
+            for (int i = 0; i < firstCorridorWidth; i++)
+            {
+                finished = finished || Dig(zToStart + i, leftRoom[1].x, necessaryDig1 + necessaryDig2 + randomDig, Directions.down, false, false);
+            }
+
+            if (!finished)
+            {
+                //if, by digging down in this way, we have not reached the lower room, then we have to dig another tunnel, that starts from the lower room
+                //and, by digging to the left, reaches our previously created corridor, in such a way to form a L-shaped corridor.
+                int xToStart = leftRoom[0].x + randomDig;
+
+                for (int j = 0; j < secondCorridorWidth; j++)
+                {
+                    finished = finished || Dig(rightRoom[0].z - 1, xToStart + j, rightRoom[0].z - zToStart + firstCorridorWidth, Directions.left, false, false);
+                }
+            }
+        }
+        else
+        {
+            //we have to dig up, then (maybe) to the right
+            int firstCorridorWidth = Mathf.Min(corridorWidth, leftRoom[1].z, leftRoom[0].z);
+            int secondCorridorWidth = angleCorridorsHaveSameWidth ? firstCorridorWidth : Random.Range(minimumCorridorWidth, maximumCorridorWitdh + 1);
+            secondCorridorWidth = Mathf.Min(secondCorridorWidth, rightRoom[1].x - rightRoom[0].x);
+
+            //dig up, as much as requried to have the corridors we want + eventually a random offset.
+            necessaryDig1 = rightRoom[1].x - leftRoom[0].x;  
+            necessaryDig2 = secondCorridorWidth;
+            randomDig = Random.Range(0, rightRoom[1].x - rightRoom[0].x - necessaryDig2 + 1);
+
+            int zToStart = Random.Range(leftRoom[0].z, leftRoom[1].z - firstCorridorWidth + 1);
+            for (int i = 0; i < firstCorridorWidth; i++)
+            {
+                finished = finished || Dig(zToStart + i, leftRoom[0].x, necessaryDig1 + necessaryDig2 + randomDig, Directions.up, false, false);
+            }
+
+            if (!finished)
+            {
+                //if, by digging down in this way, we have not reached the lower room, then we have to dig another tunnel, that starts from the lower room
+                //and, by digging to the left, reaches our previously created corridor, in such a way to form a L-shaped corridor.
+                int xToStart = leftRoom[0].x + randomDig;
+
+                for (int j = 0; j < secondCorridorWidth; j++)
+                {
+                    finished = finished || Dig(rightRoom[0].z - 1, xToStart + j, rightRoom[0].z - zToStart + firstCorridorWidth, Directions.left, false, false);
+                }
+            }
+        }
+
+    }
+            
 
 
 
