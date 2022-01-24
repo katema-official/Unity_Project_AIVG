@@ -455,18 +455,13 @@ public class LabyrinthGenerator2 : MonoBehaviour
                         }
 
                         DigLShapedCorridorForHorizontalCut(roomOnTheLeft, roomOnTheRight, corridorWidth);
-
                     }
-
                 }
-
-
-
 
                 break;
             case PTConstants.verticalCutID:
                 minSearch = Mathf.Min(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,
-                    rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);    //because idk how those two rooms are disposed in the space
+                    rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);
                 maxSearch = Mathf.Max(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,
                     rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);
 
@@ -490,6 +485,25 @@ public class LabyrinthGenerator2 : MonoBehaviour
                     {
                         int[] boundaryCoordinates = new int[] { available_X_coordinates[0], available_X_coordinates[available_X_coordinates.Count - 1] };
                         generateVerticalCorridorFromCut(current.cutWhere, boundaryCoordinates);
+                    }
+                    else
+                    {
+                        Point[] roomOnTheLeft;
+                        Point[] roomOnTheRight;
+
+                        if (leftChildRoomPoints[0].z <= rightChildRoomPoints[0].z)
+                        {
+                            roomOnTheLeft = leftChildRoomPoints;
+                            roomOnTheRight = rightChildRoomPoints;
+                        }
+                        else
+                        {
+                            roomOnTheLeft = rightChildRoomPoints;
+                            roomOnTheRight = leftChildRoomPoints;
+                        }
+
+                        DigLShapedCorridorForVerticalCut(roomOnTheLeft, roomOnTheRight, corridorWidth);
+
                     }
                 }
                 break;
@@ -582,25 +596,12 @@ public class LabyrinthGenerator2 : MonoBehaviour
     //to our starting room.
     //2) reachEndingRoom: true when we assume that this tunnel will be the last one we have to dig in order to reach
     //the destination room. 
-    private bool Dig(int startZ, int startX, int distanceToDig, Directions direction, bool reachStartingRoom, bool reachEndingRoom)
+    private bool Dig(int startZ, int startX, int distanceToDig, Directions direction)
     {
 
         switch (direction)
         {
             case Directions.up:
-                //we want to dig up, but we want to make sure we are connected to a room. To do that, we first dig down 'till we find an empty space.
-                if (reachStartingRoom)
-                {
-                    int i = 1;
-                    while (wallsArray.get(startZ, startX + i) != null)
-                    {
-                        Destroy(wallsArray.get(startZ, startX + i));
-                        wallsArray.set(startZ, startX + i, null);
-                        i++;
-                    }
-                }
-
-                //now we actually dig up
                 for(int i = 0; i > -distanceToDig; i--)
                 {
                     if(wallsArray.get(startZ, startX + i) != null)
@@ -612,34 +613,9 @@ public class LabyrinthGenerator2 : MonoBehaviour
                         return true;}
 
                 }
-
-                //the client wants us to make sure we've reached a room, while digging up.
-                if (reachEndingRoom)
-                {
-                    int i = 0;
-                    while (wallsArray.get(startZ, startX - distanceToDig - i) != null)
-                    {
-                        Destroy(wallsArray.get(startZ, startX - distanceToDig - i));
-                        wallsArray.set(startZ, startX - distanceToDig - i, null);
-                        i++;
-                    }
-                    return true;
-                }
-
                 break;
 
             case Directions.right:
-                if (reachStartingRoom)
-                {
-                    int j = 1;
-                    while (wallsArray.get(startZ - j, startX) != null)
-                    {
-                        Destroy(wallsArray.get(startZ - j, startX));
-                        wallsArray.set(startZ - j, startX, null);
-                        j++;
-                    }
-                }
-
                 for (int j = 0; j < distanceToDig; j++)
                 {
                     if(wallsArray.get(startZ + j, startX) != null)
@@ -648,33 +624,9 @@ public class LabyrinthGenerator2 : MonoBehaviour
                         wallsArray.set(startZ + j, startX, null);
                     }else{return true;}
                 }
-
-                if (reachEndingRoom)
-                {
-                    int j = 0;
-                    while (wallsArray.get(startZ + distanceToDig + j, startX) != null)
-                    {
-                        Destroy(wallsArray.get(startZ + distanceToDig + j, startX));
-                        wallsArray.set(startZ + distanceToDig + j, startX, null);
-                        j++;
-                    }
-                    return true;
-                }
-
                 break;
 
             case Directions.down:
-                if (reachStartingRoom)
-                {
-                    int i = 1;
-                    while (wallsArray.get(startZ, startX - i) != null)
-                    {
-                        Destroy(wallsArray.get(startZ, startX - i));
-                        wallsArray.set(startZ, startX - i, null);
-                        i++;
-                    }
-                }
-
                 for (int i = 0; i < distanceToDig; i++)
                 {
                     if (wallsArray.get(startZ, startX + i) != null)
@@ -683,33 +635,9 @@ public class LabyrinthGenerator2 : MonoBehaviour
                         wallsArray.set(startZ, startX + i, null);
                     }else{return true;}
                 }
-
-                if (reachEndingRoom)
-                {
-                    int i = 0;
-                    while (wallsArray.get(startZ, startX + distanceToDig + i) != null)
-                    {
-                        Destroy(wallsArray.get(startZ, startX + distanceToDig + i));
-                        wallsArray.set(startZ, startX + distanceToDig + i, null);
-                        i++;
-                    }
-                    return true;
-                }
-
                 break;
 
             case Directions.left:
-                if (reachStartingRoom)
-                {
-                    int j = 1;
-                    while (wallsArray.get(startZ + j, startX) != null)
-                    {
-                        Destroy(wallsArray.get(startZ + j, startX));
-                        wallsArray.set(startZ + j, startX, null);
-                        j++;
-                    }
-                }
-
                 for (int j = 0; j > -distanceToDig; j--)
                 {      
                     if (wallsArray.get(startZ + j, startX) != null)
@@ -718,19 +646,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
                         wallsArray.set(startZ + j, startX, null);
                     }else{return true;}
                 }
-
-                if (reachEndingRoom)
-                {
-                    int j = 0;
-                    while (wallsArray.get(startZ - distanceToDig - j, startX) != null)
-                    {
-                        Destroy(wallsArray.get(startZ - distanceToDig - j, startX));
-                        wallsArray.set(startZ - distanceToDig - j, startX, null);
-                        j++;
-                    }
-                    return true;
-                }
-
                 break;
         }
         return false;
@@ -773,23 +688,49 @@ public class LabyrinthGenerator2 : MonoBehaviour
             //now that we have our starting point, the width and the depth of the tunnel, we can dig the tunnels.
             for (int i = 0; i < firstCorridorWidth; i++)
             {
-                finished = Dig(zToStart + i, leftRoom[1].x, necessaryDig1 + necessaryDig2 + randomDig, Directions.down, false, false) || finished;
+                finished = Dig(zToStart + i, leftRoom[1].x, necessaryDig1 + necessaryDig2 + randomDig, Directions.down) || finished;
             }
-
+            int xToStart = 0;
             if (!finished)
             {
-                
+
                 //if, by digging down in this way, we have not reached the lower room, then we have to dig another tunnel, that starts from the lower room
                 //and, by digging to the left, reaches our previously created corridor, in such a way to form a L-shaped corridor.
-                int xToStart = rightRoom[0].x + randomDig;
+                xToStart = rightRoom[0].x + randomDig;
 
-                for (int j = 0; j < secondCorridorWidth; j++)               
+                for (int j = 0; j < secondCorridorWidth; j++)
                 {
-                    finished = Dig(rightRoom[0].z - 1, xToStart + j, rightRoom[0].z - (zToStart + firstCorridorWidth), Directions.left, false, false) || finished;
+                    Dig(rightRoom[0].z - 1, xToStart + j, rightRoom[0].z - (zToStart + firstCorridorWidth), Directions.left);
                 }
             }
 
-            
+            //Doing this, sadly, isn't enough. Our rooms are not always "empty rectangle". They are like that only for leaf nodes.
+            //for this reason, we have to stretch the corridors we have created untill we hit a wall.
+            //first, we have to do this on the vertical corridor
+            bool end = false;
+            int x = leftRoom[1].x;
+            while (!end)
+            {
+                x--;
+                for (int i = zToStart; i < zToStart + firstCorridorWidth; i++)
+                {
+                    end = Dig(i, x, 1, Directions.up) || end;
+                }
+            }
+            end = false;
+            int z = rightRoom[0].z - 1;
+            //then, on the horizontal one (if needed)
+            if (!finished) { 
+                while (!end)
+                {
+                    z++;
+                    for (int j = xToStart; j < xToStart + secondCorridorWidth; j++)
+                    {
+                        end = Dig(z, j, 1, Directions.right) || end;
+                    }
+                }
+            }
+
 
             //debug
             LVectors.Add(new Point[] { new Point(leftRoom[0].z, leftRoom[0].x) , new Point(rightRoom[0].z, rightRoom[0].x)});
@@ -810,25 +751,189 @@ public class LabyrinthGenerator2 : MonoBehaviour
             int zToStart = Random.Range(leftRoom[0].z, leftRoom[1].z - firstCorridorWidth + 1);
             for (int i = 0; i < firstCorridorWidth; i++)
             {
-                finished = Dig(zToStart + i, leftRoom[0].x, necessaryDig1 + necessaryDig2 + randomDig, Directions.up, false, false) || finished;
+                finished = Dig(zToStart + i, leftRoom[0].x, necessaryDig1 + necessaryDig2 + randomDig, Directions.up) || finished;
             }
 
+            int xToStart = 0;
             if (!finished)
             {
-                //if, by digging down in this way, we have not reached the lower room, then we have to dig another tunnel, that starts from the lower room
-                //and, by digging to the left, reaches our previously created corridor, in such a way to form a L-shaped corridor.
-                int xToStart = rightRoom[0].x + randomDig;
+                xToStart = rightRoom[0].x + randomDig;
 
                 for (int j = 0; j < secondCorridorWidth; j++)
                 {
-                    finished = Dig(rightRoom[0].z - 1, xToStart + j, rightRoom[0].z - zToStart + firstCorridorWidth, Directions.left, false, false) || finished;
+                    finished = Dig(rightRoom[0].z - 1, xToStart + j, rightRoom[0].z - zToStart + firstCorridorWidth, Directions.left) || finished;
+                }
+            }
+
+            bool end = false;
+            int x = leftRoom[0].x;
+            while (!end)
+            {
+                x++;
+                for (int i = zToStart; i < zToStart + firstCorridorWidth; i++)
+                {
+                    end = Dig(i, x, 1, Directions.up) || end;
+                }
+            }
+            end = false;
+            int z = rightRoom[0].z - 1;
+            //then, on the horizontal one (if needed)
+            if (!finished)
+            {
+                while (!end)
+                {
+                    z++;
+                    for (int j = xToStart; j < xToStart + secondCorridorWidth; j++)
+                    {
+                        end = Dig(z, j, 1, Directions.right) || end;
+                    }
                 }
             }
         }
-
     }
-            
 
+    //function to dig an L-shaped corridor between two rooms separated by a vertical cut
+    private void DigLShapedCorridorForVerticalCut(Point[] leftRoom, Point[] rightRoom, int corridorWidth)
+    {
+        int necessaryDig1;
+        int necessaryDig2;
+        int randomDig;
+        bool finished = false;
+
+        if (leftRoom[0].x <= rightRoom[0].x)
+        {
+            //This code will be similar to the one for the horizontal cut, but with a big difference:
+            //Before, we saw the position of the two rooms, and then:
+            //1) we first dug up/down
+            //2) then, to the right
+            //here, to make the dungeon seem more random, we'll do the opposite:
+            //1) we first dig right
+            //2) we then dig up/down
+            //(actually, it's not only because the dungeon will appear more random: this strategy also ensures us that
+            //some corridors, if possible, won't need two corridors to be built, but just one, as happened in the other case).
+            int firstCorridorWidth = Mathf.Min(corridorWidth, leftRoom[1].z - leftRoom[0].z);
+
+            //the second corridor can be randomly generated, or not
+            int secondCorridorWidth = angleCorridorsHaveSameWidth ? firstCorridorWidth : Random.Range(minimumCorridorWidth, maximumCorridorWitdh + 1);
+
+            //same thing as before.
+            secondCorridorWidth = Mathf.Min(secondCorridorWidth, rightRoom[1].x - rightRoom[0].x);
+
+            //dig down, as much as requried to have the corridors we want + eventually a random offset.
+            necessaryDig1 = rightRoom[0].x - leftRoom[1].x;  //NB: it has to be >= 0, since we are dealing with two rooms separated by a horizontal cut.
+            necessaryDig2 = secondCorridorWidth;
+            randomDig = Random.Range(0, rightRoom[1].x - rightRoom[0].x - necessaryDig2 + 1);
+
+            //decide where to build the tunnel
+            int zToStart = Random.Range(leftRoom[0].z, leftRoom[1].z - firstCorridorWidth + 1);     //TODO: the starting point non deve superare il punto alto sx della stanza in basso
+
+            //now that we have our starting point, the width and the depth of the tunnel, we can dig the tunnels.
+            for (int i = 0; i < firstCorridorWidth; i++)
+            {
+                finished = Dig(zToStart + i, leftRoom[1].x, necessaryDig1 + necessaryDig2 + randomDig, Directions.down) || finished;
+            }
+            int xToStart = 0;
+            if (!finished)
+            {
+
+                //if, by digging down in this way, we have not reached the lower room, then we have to dig another tunnel, that starts from the lower room
+                //and, by digging to the left, reaches our previously created corridor, in such a way to form a L-shaped corridor.
+                xToStart = rightRoom[0].x + randomDig;
+
+                for (int j = 0; j < secondCorridorWidth; j++)
+                {
+                    Dig(rightRoom[0].z - 1, xToStart + j, rightRoom[0].z - (zToStart + firstCorridorWidth), Directions.left);
+                }
+            }
+
+            //Doing this, sadly, isn't enough. Our rooms are not always "empty rectangle". They are like that only for leaf nodes.
+            //for this reason, we have to stretch the corridors we have created untill we hit a wall.
+            //first, we have to do this on the vertical corridor
+            bool end = false;
+            int x = leftRoom[1].x;
+            while (!end)
+            {
+                x--;
+                for (int i = zToStart; i < zToStart + firstCorridorWidth; i++)
+                {
+                    end = Dig(i, x, 1, Directions.up) || end;
+                }
+            }
+            end = false;
+            int z = rightRoom[0].z - 1;
+            //then, on the horizontal one (if needed)
+            if (!finished)
+            {
+                while (!end)
+                {
+                    z++;
+                    for (int j = xToStart; j < xToStart + secondCorridorWidth; j++)
+                    {
+                        end = Dig(z, j, 1, Directions.right) || end;
+                    }
+                }
+            }
+
+
+            //debug
+            LVectors.Add(new Point[] { new Point(leftRoom[0].z, leftRoom[0].x), new Point(rightRoom[0].z, rightRoom[0].x) });
+
+        }
+        else
+        {
+            //we have to dig up, then (maybe) to the right
+            int firstCorridorWidth = Mathf.Min(corridorWidth, leftRoom[1].z - leftRoom[0].z);
+            int secondCorridorWidth = angleCorridorsHaveSameWidth ? firstCorridorWidth : Random.Range(minimumCorridorWidth, maximumCorridorWitdh + 1);
+            secondCorridorWidth = Mathf.Min(secondCorridorWidth, rightRoom[1].x - rightRoom[0].x);
+
+            //dig up, as much as requried to have the corridors we want + eventually a random offset.
+            necessaryDig1 = leftRoom[0].x - rightRoom[1].x;
+            necessaryDig2 = secondCorridorWidth;
+            randomDig = Random.Range(0, rightRoom[1].x - rightRoom[0].x - necessaryDig2 + 1);
+
+            int zToStart = Random.Range(leftRoom[0].z, leftRoom[1].z - firstCorridorWidth + 1);
+            for (int i = 0; i < firstCorridorWidth; i++)
+            {
+                finished = Dig(zToStart + i, leftRoom[0].x, necessaryDig1 + necessaryDig2 + randomDig, Directions.up) || finished;
+            }
+
+            int xToStart = 0;
+            if (!finished)
+            {
+                xToStart = rightRoom[0].x + randomDig;
+
+                for (int j = 0; j < secondCorridorWidth; j++)
+                {
+                    finished = Dig(rightRoom[0].z - 1, xToStart + j, rightRoom[0].z - zToStart + firstCorridorWidth, Directions.left) || finished;
+                }
+            }
+
+            bool end = false;
+            int x = leftRoom[0].x;
+            while (!end)
+            {
+                x++;
+                for (int i = zToStart; i < zToStart + firstCorridorWidth; i++)
+                {
+                    end = Dig(i, x, 1, Directions.up) || end;
+                }
+            }
+            end = false;
+            int z = rightRoom[0].z - 1;
+            //then, on the horizontal one (if needed)
+            if (!finished)
+            {
+                while (!end)
+                {
+                    z++;
+                    for (int j = xToStart; j < xToStart + secondCorridorWidth; j++)
+                    {
+                        end = Dig(z, j, 1, Directions.right) || end;
+                    }
+                }
+            }
+        }
+    }
 
 
 
