@@ -24,7 +24,7 @@ namespace PartitioningTree2
             this.x = x;
         }
 
-        public override string ToString()
+        public string AsString()
         {
             return "(" + z + "," + x + ")";
         }

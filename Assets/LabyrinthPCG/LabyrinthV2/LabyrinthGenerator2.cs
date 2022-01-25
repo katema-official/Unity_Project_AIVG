@@ -284,6 +284,9 @@ public class LabyrinthGenerator2 : MonoBehaviour
 
             //now, for this leaf node, i can set its room points
             current.setRoomPoints(new Point(room_z0, room_x0), new Point(room_z0 + z_length, room_x0 + x_length));
+            //debug
+            roomsConnected.Add(new Point[] { new Point(room_z0, room_x0), new Point(room_z0 + z_length, room_x0 + x_length)});
+
             //we don't need to set the cut orientation: we did that during the tree generation
 
             //Debug.LogFormat("In space ({0},{1}) -> ({2},{3}), the chosen point is ({4},{5}) with length <{6},{7}>", current.p1.z, current.p1.x, current.p2.z, current.p2.x,
@@ -365,6 +368,8 @@ public class LabyrinthGenerator2 : MonoBehaviour
         Point top_left = new Point(minZ, minX);
         Point bottom_right = new Point(maxZ, maxX);
         current.setRoomPoints(top_left, bottom_right);
+        roomsConnected.Add(new Point[] { top_left, bottom_right });
+
 
 
         //now, this is where things get complicated. We have to distingush two scenarios:
@@ -404,6 +409,8 @@ public class LabyrinthGenerator2 : MonoBehaviour
                     //of the corridor
                     int[] boundaryCoordinates = generateDirectCorridorBoundCoordinates(available_Z_coordinates, corridorWidth);
 
+                    LVectors.Add(new Point[] { new Point(boundaryCoordinates[0], current.cutWhere), new Point(boundaryCoordinates[1], current.cutWhere) });
+
                     //so, now we have the coordinates representing the columns to be emptied in order to join the two rooms.
                     //Even so, actually connecting the two rooms requries a bit of attenction, since we want to remove the space
                     //that is between the two rooms, not the columns as a whole.
@@ -411,7 +418,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
                     //1) Given that we know the coordinate of the horizontal cut (a value on the x axis) that is stored on the current node,
                     //we first place ourselves, for each z coordinate that we have (the columns), in that point. Then, we "dig" upwards (removing
                     //all the units we find) untill we find a room. Same goes for digging downwards.
-                    generateHorizontalCorridorFromCut(current.cutWhere, boundaryCoordinates);
+                    generateVerticalCorridorFromCut(current.cutWhere, boundaryCoordinates);
 
                 }
                 else
@@ -421,7 +428,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
                         //or, if that space is NOT enough to contain the randomly generated corridor width:
                         //is this space enough to contain another corridor, if the user allowed simpler corridors?
                         int[] boundaryCoordinates = new int[] { available_Z_coordinates[0], available_Z_coordinates[available_Z_coordinates.Count - 1] };
-                        generateHorizontalCorridorFromCut(current.cutWhere, boundaryCoordinates);
+                        generateVerticalCorridorFromCut(current.cutWhere, boundaryCoordinates);
                     }
                     else
                     {
@@ -449,7 +456,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
                             roomOnTheRight = leftChildRoomPoints;
                         }
 
-                        DigLShapedCorridorForHorizontalCut(roomOnTheLeft, roomOnTheRight, corridorWidth);
+                        //DigLShapedCorridorForHorizontalCut(roomOnTheLeft, roomOnTheRight, corridorWidth);
                     }
                 }
 
@@ -472,14 +479,15 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 if (available_X_coordinates.Count >= corridorWidth)
                 {
                     int[] boundaryCoordinates = generateDirectCorridorBoundCoordinates(available_X_coordinates, corridorWidth);
-                    generateVerticalCorridorFromCut(current.cutWhere, boundaryCoordinates);
+                    LVectors.Add(new Point[] {new Point(current.cutWhere, boundaryCoordinates[0]), new Point(current.cutWhere, boundaryCoordinates[1])});
+                    generateHorizontalCorridorFromCut(current.cutWhere, boundaryCoordinates);
                 }
                 else
                 {
                     if (allowSimplerCorridors && available_X_coordinates.Count >= minimumCorridorWidth)
                     {
                         int[] boundaryCoordinates = new int[] { available_X_coordinates[0], available_X_coordinates[available_X_coordinates.Count - 1] };
-                        generateVerticalCorridorFromCut(current.cutWhere, boundaryCoordinates);
+                        generateHorizontalCorridorFromCut(current.cutWhere, boundaryCoordinates);
                     }
                     else
                     {
@@ -497,7 +505,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
                             roomOnTheRight = leftChildRoomPoints;
                         }
 
-                        DigLShapedCorridorForVerticalCut(roomOnTheLeft, roomOnTheRight, corridorWidth);
+                        //DigLShapedCorridorForVerticalCut(roomOnTheLeft, roomOnTheRight, corridorWidth);
 
                     }
                 }
@@ -522,10 +530,93 @@ public class LabyrinthGenerator2 : MonoBehaviour
     }
 
 
-    private void generateHorizontalCorridorFromCut(int xMiddle, int[] boundaryCoordinates)
+    private void generateHorizontalCorridorFromCut(int zMiddle, int[] boundaryCoordinates)
     {
-        //first: dig upwards (or to the left)
+        //first: dig left
+        int z = zMiddle - 1;
+        bool reached = false;
+        while (!reached) {
+            for (int rowIndex = boundaryCoordinates[0]; rowIndex < boundaryCoordinates[1]; rowIndex++)
+            {
+                reached = Dig(z, rowIndex, 1, Directions.left) || reached;
+            }
+            z--;
+        }
 
+        //second: dig right
+        z = zMiddle;
+        reached = false;
+        while (!reached)
+        {
+            for (int rowIndex = boundaryCoordinates[0]; rowIndex < boundaryCoordinates[1]; rowIndex++)
+            {
+                reached = Dig(z, rowIndex, 1, Directions.right) || reached;
+            }
+            z++;
+        }
+
+
+        /*
+        //first: dig left
+        int z = 0;
+        for (int rowIndex = boundaryCoordinates[0]; rowIndex < boundaryCoordinates[1]; rowIndex++)
+        {
+            z = zMiddle;
+            while (wallsArray.get(z, rowIndex) != null)
+            {
+                Destroy(wallsArray.get(z, rowIndex));
+                wallsArray.set(z, rowIndex, null);
+                z--;
+            }
+        }
+
+        //second: dig right
+        for (int rowIndex = boundaryCoordinates[0]; rowIndex < boundaryCoordinates[1]; rowIndex++)
+        {
+            z = zMiddle + 1;
+            while (wallsArray.get(z, rowIndex) != null)
+            {
+                Destroy(wallsArray.get(z, rowIndex));
+                wallsArray.set(z, rowIndex, null);
+                z++;
+            }
+        }
+
+        */
+
+
+
+        
+    }
+
+    private void generateVerticalCorridorFromCut(int xMiddle, int[] boundaryCoordinates)
+    {
+        //first: dig up
+        int x = xMiddle - 1;
+        bool reached = false;
+        while (!reached)
+        {
+            for (int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++)
+            {
+                reached = Dig(columnIndex, x, 1, Directions.up) || reached;
+            }
+            x--;
+        }
+
+        //second: dig down
+        x = xMiddle;
+        reached = false;
+        while (!reached)
+        {
+            for (int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++)
+            {
+                reached = Dig(columnIndex, x, 1, Directions.down) || reached;
+            }
+            x++;
+        }
+
+        /*
+        //first: dig upwards
         int x = 0;
         for (int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++)
         {
@@ -549,32 +640,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 x++;        //I go downwards
             }
         }
-    }
-
-    private void generateVerticalCorridorFromCut(int zMiddle, int[] boundaryCoordinates)
-    {
-        int z = 0;
-        for (int rowIndex = boundaryCoordinates[0]; rowIndex < boundaryCoordinates[1]; rowIndex++)
-        {
-            z = zMiddle;
-            while (wallsArray.get(z, rowIndex) != null)
-            {
-                Destroy(wallsArray.get(z, rowIndex));
-                wallsArray.set(z, rowIndex, null);
-                z--;
-            }
-        }
-
-        for (int rowIndex = boundaryCoordinates[0]; rowIndex < boundaryCoordinates[1]; rowIndex++)
-        {
-            z = zMiddle + 1;
-            while (wallsArray.get(z, rowIndex) != null)
-            {
-                Destroy(wallsArray.get(z, rowIndex));
-                wallsArray.set(z, rowIndex, null);
-                z++;
-            }
-        }
+        */
     }
 
     //function that, given a starting point (z,x), a distance to dig and a direction to dig, will start digging
@@ -597,6 +663,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
         switch (direction)
         {
             case Directions.up:
+                Debug.LogFormat("I have to dig up. Start from ({0},{1}). For {2} steps.", startZ, startX, distanceToDig);
                 for(int i = 0; i > -distanceToDig; i--)
                 {
                     if(wallsArray.get(startZ, startX + i) != null)
@@ -605,6 +672,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
                         wallsArray.set(startZ, startX + i, null);
                     }else
                     {
+                        //Debug.Log("UP RETURNED TRUE");
                         return true;}
 
                 }
@@ -649,6 +717,9 @@ public class LabyrinthGenerator2 : MonoBehaviour
     //function to dig an L-shaped corridor between two rooms separated by a horizontal cut
     private void DigLShapedCorridorForHorizontalCut(Point[] leftRoom, Point[] rightRoom, int corridorWidth)
     {
+
+        Debug.Log("HI THERE! The rooms i'm connecting are " + leftRoom[0].AsString() + " and " + rightRoom[0].AsString());
+
         int necessaryDig1;
         int necessaryDig2;
         int randomDig;
@@ -675,6 +746,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
 
         int p;          //1 = first dig down, then right. 0 = first dig up, then right.
         Directions d;
+        int offset;
         if (leftRoom[0].x <= rightRoom[0].x)
         {
             //the left room is above the right one.
@@ -684,6 +756,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
             //service variable, they are useful just to not write two times a code that would differ only because of those values
             p = 1;
             d = Directions.down;
+            offset = 0;
         }
         else
         {
@@ -691,6 +764,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
             necessaryDig1 = leftRoom[0].x - rightRoom[1].x;
             p = 0;
             d = Directions.up;
+            offset = -1;
         }
 
 
@@ -698,23 +772,36 @@ public class LabyrinthGenerator2 : MonoBehaviour
         int rightBound = Mathf.Min(rightRoom[0].z, leftRoom[1].z);
         int zToStart = Random.Range(leftRoom[0].z, (rightBound - firstCorridorWidth) + 1);     
         zToStart = zToStart < leftRoom[0].z ? leftRoom[0].z : zToStart;     //the previous line could return a value lower then leftRoom[0].z
+        Debug.LogFormat("zToStart = {0}", zToStart, leftRoom[1]);
+
+        Debug.LogFormat("Digs: {0}, {1}, {2}", necessaryDig1, necessaryDig2, randomDig);
 
         //now that we have our starting point, the width and the depth of the tunnel, we can dig the tunnels.
         for (int i = 0; i < firstCorridorWidth; i++)
         {
-            finished = Dig(zToStart + i, leftRoom[p].x, necessaryDig1 + necessaryDig2 + randomDig, d) || finished;
+            finished = Dig(zToStart + i, leftRoom[p].x + offset, necessaryDig1 + necessaryDig2 + randomDig, d) || finished;
         }
         int xToStart = 0;
         if (!finished)
         {
-            //if, by digging down in this way, we have not reached the lower room, then we have to dig another tunnel, that starts from the lower room
+            //if, by digging up/down in this way, we have not reached the lower room, then we have to dig another tunnel, that starts from the lower/upper room
             //and, by digging to the left, reaches our previously created corridor, in such a way to form a L-shaped corridor.
-            xToStart = rightRoom[0].x + randomDig;
+            if (leftRoom[0].x <= rightRoom[0].x)
+            {
+                xToStart = rightRoom[0].x + randomDig;
+            }
+            else
+            {
+                xToStart = rightRoom[1].x - randomDig - necessaryDig2;
+            }
+
+            Debug.LogFormat("xToStart = {0}", xToStart);
 
             for (int j = 0; j < secondCorridorWidth; j++)
             {
                 Dig(rightRoom[0].z - 1, xToStart + j, rightRoom[0].z - (zToStart + firstCorridorWidth), Directions.left);
             }
+
         }
 
         //Doing this, sadly, isn't enough. Our rooms are not always "empty rectangle". They are like that only for leaf nodes.
@@ -862,6 +949,7 @@ public class LabyrinthGenerator2 : MonoBehaviour
     //VISIBLE DEBUG
     private static List<Point[]> gizmosVectors = new List<Point[]>();
     private static List<Point[]> LVectors = new List<Point[]>();
+    private static List<Point[]> roomsConnected = new List<Point[]>();
 
     public void OnDrawGizmos()
     {
@@ -886,9 +974,12 @@ public class LabyrinthGenerator2 : MonoBehaviour
             Gizmos.DrawLine(new Vector3(points[0].x, 1, points[0].z), new Vector3(points[1].x, 1, points[1].z));
         }
 
+        foreach(Point[] points in roomsConnected)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawLine(new Vector3(points[0].x, 1, points[0].z), new Vector3(points[1].x, 1, points[1].z));
+        }
+
     }
-
-
-
 
 }
