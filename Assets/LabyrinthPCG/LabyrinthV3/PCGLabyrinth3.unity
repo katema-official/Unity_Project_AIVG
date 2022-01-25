@@ -199,13 +199,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 537882667}
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0.5, y: -0.5, z: 0.5, w: 0.5}
   m_LocalPosition: {x: 50, y: 100, z: 50}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 90}
 --- !u!1 &916226684
 GameObject:
   m_ObjectHideFlags: 0
@@ -238,20 +238,20 @@ MonoBehaviour:
   unit: {fileID: 3426741760763179013, guid: b885306ce5789f2418553073ce2aa4dd, type: 3}
   heightOfWalls: 1
   unitScale: 1
-  z0: -100
-  x0: -100
+  z0: 0
+  x0: 0
   width: 100
   height: 100
-  smallestPartitionZ: 4
-  smallestPartitionX: 4
+  smallestPartitionZ: 15
+  smallestPartitionX: 15
   roomsMustBeSeparated: 1
-  minimumRoomZ: 1
-  minimumRoomX: 1
-  RandomSeed: 0
+  minimumRoomZ: 5
+  minimumRoomX: 5
+  RandomSeed: 1748732732
   minimumHorizontalCorridorWidth: 1
   maximumHorizontalCorridorWitdh: 1
   minimumVerticalCorridorWidth: 1
-  maximumVerticalCorridorWitdh: 1
+  maximumVerticalCorridorWitdh: 5
 --- !u!4 &916226686
 Transform:
   m_ObjectHideFlags: 0

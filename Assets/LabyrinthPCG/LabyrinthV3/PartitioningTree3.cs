@@ -111,4 +111,18 @@ namespace PartitioningTree3
         left,
         right
     }
+
+    public class MyUtility {
+        public static bool boolContains(bool[] b, bool value)
+        {
+            for (int i = 0; i < b.Length; i++)
+            {
+                if (b[i] == value)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 }

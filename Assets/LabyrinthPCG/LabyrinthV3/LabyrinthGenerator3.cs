@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using PartitioningTree3;
+using System.Linq;
 
 public class LabyrinthGenerator3 : MonoBehaviour
 {
@@ -102,6 +103,9 @@ public class LabyrinthGenerator3 : MonoBehaviour
         //we traverse the tree we have built, and when we'll find a leaf, we'll know that
         //all the walls inside that node need to be removed
         generateRooms(root);
+
+        //----------CORRIDORS INITIALIZATION----------
+        generateCorridors(root);
     }
 
 
@@ -256,11 +260,7 @@ public class LabyrinthGenerator3 : MonoBehaviour
             //1) one that tells us where is the upper-left coordinate of the point
             //2) one that tells us its length in a certain axis
 
-
-            //To generate a room, we pick two random points inside the given area (the
-            //two points though must be INSIDE the area, not on the edges, or else we might
-            //have two rooms that are directly connected to each other, and that's not what
-            //I want).
+            //To generate a room, we pick two random points inside the given area.
             //So, let's consider those constrains while calculating the room points
             int actualPartitionZ = Mathf.Abs(current.p1.z - current.p2.z);
             int actualPartitionX = Mathf.Abs(current.p1.x - current.p2.x);
@@ -273,13 +273,9 @@ public class LabyrinthGenerator3 : MonoBehaviour
             //now, for this leaf node, i can set its room points
             current.setRoomSquares(new Square(room_z0, room_x0), new Square(room_z0 + z_length, room_x0 + x_length));
             //debug
-            roomsConnected.Add(new Square[] { new Square(room_z0, room_x0), new Square(room_z0 + z_length, room_x0 + x_length) });
+            //roomsConnected.Add(new Square[] { new Square(room_z0, room_x0), new Square(room_z0 + z_length, room_x0 + x_length) });
 
             //we don't need to set the cut orientation: we did that during the tree generation
-
-            //Debug.LogFormat("In space ({0},{1}) -> ({2},{3}), the chosen point is ({4},{5}) with length <{6},{7}>", current.p1.z, current.p1.x, current.p2.z, current.p2.x,
-            //    room_z0, room_x0, z_length, x_length);
-
 
             //finally, we can remove the objects covering our room space
             for (int j = room_x0; j < room_x0 + x_length; j++)
@@ -321,9 +317,313 @@ public class LabyrinthGenerator3 : MonoBehaviour
 
 
 
+    //----------LOGIC FOR GENERATING THE CORRIDORS----------
 
-    
-    private void Update()
+    //now that we have our beautiful tree with his nodes and rooms, we have to generate the corridors.
+    //to do that, we use the constrains imposed by the user.
+
+    //this recursive function will return to the current node the room coordinates of its children combined
+    private Square[] generateCorridors(Node current)
+    {
+        //base case: the node doesn't have any child (it is a "full" room, meaning a room where all the points
+        //between the upper-left corner and the bottom-right one are part of the room), so he can return those
+        //two points. Nothing more. It's great when things are this simple, aren't they?
+        if (current.left_child == null && current.right_child == null)
+        {
+            return new Square[] { current.room_p1, current.room_p2 };
+        }
+
+        //if the node is not a leaf, then, first of all, he must ask to both of his children the upper-left
+        //point and lower-left point of their respective rooms, to then merge them together.
+        Square[] leftChildRoomPoints = generateCorridors(current.left_child);
+        Square[] rightChildRoomPoints = generateCorridors(current.right_child);
+
+        //now we set the two points for this merged room.
+        int minZ = Mathf.Min(leftChildRoomPoints[0].z, leftChildRoomPoints[1].z,
+                    rightChildRoomPoints[0].z, rightChildRoomPoints[1].z);
+        int minX = Mathf.Min(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,
+                    rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);
+        int maxZ = Mathf.Max(leftChildRoomPoints[0].z, leftChildRoomPoints[1].z,
+                    rightChildRoomPoints[0].z, rightChildRoomPoints[1].z);
+        int maxX = Mathf.Max(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,
+                    rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);
+
+        Square top_left = new Square(minZ, minX);
+        Square bottom_right = new Square(maxZ, maxX);
+        current.setRoomSquares(top_left, bottom_right);
+        roomsConnected.Add(new Square[] { top_left, bottom_right });
+
+
+
+        //now, this is where things get complicated. We have to distingush two scenarios:
+        //1) we can generate a direct corridor between these two rooms
+        //2) we have to generate a L shaped corridor (help)
+        
+
+
+
+        //ok, that's the width. Now let's see: if we were to create a direct corridor between these two rooms (the
+        //case we are all hoping for), what's the space we have at hand to do that, relatively also to the cut orientation?
+        int minSearch = 0;
+        int maxSearch = 0;
+        int corridorWidth;
+        switch (current.cutOrientation)
+        {
+            case PTConstants.horizontalCutID:
+                //What will be the width of this corridor?
+                corridorWidth = Random.Range(minimumVerticalCorridorWidth, maximumVerticalCorridorWitdh + 1);
+
+                //if the cut was done horizontally, then we have to search all the possible "columns" eligible for building a direct corridor.
+                minSearch = Mathf.Min(leftChildRoomPoints[0].z, leftChildRoomPoints[1].z,
+                    rightChildRoomPoints[0].z, rightChildRoomPoints[1].z);    //because idk how those two rooms are disposed in the space
+                maxSearch = Mathf.Max(leftChildRoomPoints[0].z, leftChildRoomPoints[1].z,
+                    rightChildRoomPoints[0].z, rightChildRoomPoints[1].z);
+
+                //now, for each possible z value between the minimum and the maximum, check: is that coordinate, that
+                //represents a column, one on which both rooms lie for at least one unit?
+                List<int> available_Z_coordinates = new List<int>();
+                for (int i = minSearch; i < maxSearch; i++)
+                {
+                    if (leftChildRoomPoints[0].z <= i && i < leftChildRoomPoints[1].z && rightChildRoomPoints[0].z <= i && i < rightChildRoomPoints[1].z)
+                    {
+                        available_Z_coordinates.Add(i);
+                    }
+                }
+
+                //based on that information, tell me the left and right walls (coordinates on z axis) for this corridor
+                int[] boundaryCoordinates = generateDirectCorridorBoundCoordinates(available_Z_coordinates, corridorWidth, leftChildRoomPoints[1].z);
+
+                LVectors.Add(new Square[] { new Square(boundaryCoordinates[0], current.cutWhere), new Square(boundaryCoordinates[1], current.cutWhere) });
+
+                //so, now we have the coordinates representing the columns to be emptied in order to join the two rooms.
+                //Even so, actually connecting the two rooms requries a bit of attenction, since we want to remove the space
+                //that is between the two rooms, not the columns as a whole.
+                //To do the cut, we procees as following:
+                //1) Given that we know the coordinate of the horizontal cut (a value on the x axis) that is stored on the current node,
+                //we first place ourselves, for each z coordinate that we have (the columns), in that point. Then, we "dig" upwards (removing
+                //all the units we find) untill we find a room. Same goes for digging downwards.
+                generateVerticalCorridorFromCut(current.cutWhere, boundaryCoordinates);
+
+                /*
+                
+                    if (allowSimplerCorridors && available_Z_coordinates.Count >= minimumCorridorWidth)
+                    {
+                        //or, if that space is NOT enough to contain the randomly generated corridor width:
+                        //is this space enough to contain another corridor, if the user allowed simpler corridors?
+                        int[] boundaryCoordinates = new int[] { available_Z_coordinates[0], available_Z_coordinates[available_Z_coordinates.Count - 1] };
+                        generateVerticalCorridorFromCut(current.cutWhere, boundaryCoordinates);
+                    }
+                    else
+                    {
+                        //this is where things get reaaaaally messy, because it is explicitly required to create a L-shaped corridor 
+                        //It is in general not easy, because, to do this, we have to make some calculations based on the position of the two rooms.
+                        //We'll also have to distinguish two kind of corridors: the ones that have the a constant width, and those that can have
+                        //two different widths. It depends on the variable angleCorridorsHaveSameWidth.
+                        //So... let's start by getting an idea of where those rooms are placed.
+                        //In general, those two rooms can be:
+                        //1) the one on the left is in the upper part of the cut, the right one is in the lowe part
+                        //2) viceversa
+                        //According to this displacement, we'll have to dig first down or up, and then, in both cases, to the right.
+
+                        Point[] roomOnTheLeft;
+                        Point[] roomOnTheRight;
+
+                        if (leftChildRoomPoints[0].z <= rightChildRoomPoints[0].z)
+                        {
+                            roomOnTheLeft = leftChildRoomPoints;
+                            roomOnTheRight = rightChildRoomPoints;
+                        }
+                        else
+                        {
+                            roomOnTheLeft = rightChildRoomPoints;
+                            roomOnTheRight = leftChildRoomPoints;
+                        }
+
+                        //DigLShapedCorridorForHorizontalCut(roomOnTheLeft, roomOnTheRight, corridorWidth);
+                    }
+                */
+
+                break;
+            case PTConstants.verticalCutID:
+                corridorWidth = Random.Range(minimumHorizontalCorridorWidth, maximumHorizontalCorridorWitdh + 1);
+
+                minSearch = Mathf.Min(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,
+                    rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);
+                maxSearch = Mathf.Max(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,
+                    rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);
+
+                List<int> available_X_coordinates = new List<int>();
+                for (int i = minSearch; i < maxSearch; i++)
+                {
+                    if (leftChildRoomPoints[0].x <= i && i < leftChildRoomPoints[1].x && rightChildRoomPoints[0].x <= i && i < rightChildRoomPoints[1].x)
+                    {
+                        available_X_coordinates.Add(i);
+                    }
+                }
+                /*
+                if (available_X_coordinates.Count >= corridorWidth)
+                {
+                    int[] boundaryCoordinates = generateDirectCorridorBoundCoordinates(available_X_coordinates, corridorWidth);
+                    LVectors.Add(new Point[] { new Point(current.cutWhere, boundaryCoordinates[0]), new Point(current.cutWhere, boundaryCoordinates[1]) });
+                    generateHorizontalCorridorFromCut(current.cutWhere, boundaryCoordinates);
+                }
+                else
+                {
+                    if (allowSimplerCorridors && available_X_coordinates.Count >= minimumCorridorWidth)
+                    {
+                        int[] boundaryCoordinates = new int[] { available_X_coordinates[0], available_X_coordinates[available_X_coordinates.Count - 1] };
+                        generateHorizontalCorridorFromCut(current.cutWhere, boundaryCoordinates);
+                    }
+                    else
+                    {
+                        Point[] roomOnTheLeft;
+                        Point[] roomOnTheRight;
+
+                        if (leftChildRoomPoints[0].z <= rightChildRoomPoints[0].z)
+                        {
+                            roomOnTheLeft = leftChildRoomPoints;
+                            roomOnTheRight = rightChildRoomPoints;
+                        }
+                        else
+                        {
+                            roomOnTheLeft = rightChildRoomPoints;
+                            roomOnTheRight = leftChildRoomPoints;
+                        }
+
+                        //DigLShapedCorridorForVerticalCut(roomOnTheLeft, roomOnTheRight, corridorWidth);
+
+                    }
+                }*/
+                break;
+                
+        }
+
+
+
+
+
+        //in the end, after having merged the two rooms, we can return to our parent the coordinates (in points)
+        //of our new room.
+        return new Square[] { current.room_p1, current.room_p2 };
+    }
+
+    private int[] generateDirectCorridorBoundCoordinates(List<int> listOfAvailableCoordinates, int requiredWidth, int rightBound)
+    {
+        if(listOfAvailableCoordinates[0] > rightBound - requiredWidth)
+        {
+            return new int[] {rightBound - requiredWidth, rightBound};
+        }
+
+        int leftWall = Random.Range(listOfAvailableCoordinates[0], listOfAvailableCoordinates[listOfAvailableCoordinates.Count - 1] - requiredWidth + 2);
+        int rightWall = leftWall + requiredWidth;
+        //Debug.LogFormat("leftWall = {0}, rightWall = {1}", leftWall, rightWall);
+        //Debug.LogFormat("listOfAvailableCoordinates[0] = {0}, listOfAvailableCoordinates[Last] - rw + 2 = {1}",listOfAvailableCoordinates[0],
+        //    listOfAvailableCoordinates[listOfAvailableCoordinates.Count - 1] - requiredWidth + 2);
+        return new int[] { leftWall, rightWall };
+    }
+
+    private void generateVerticalCorridorFromCut(int xMiddle, int[] boundaryCoordinates)
+    {
+        //first: dig up
+        digVerticallyInSearchForRoom(xMiddle, boundaryCoordinates, Directions.up);
+        //then: dig down
+        digVerticallyInSearchForRoom(xMiddle, boundaryCoordinates, Directions.down);
+    }
+
+    private void digVerticallyInSearchForRoom(int xMiddle, int[] boundaryCoordinates, Directions dir)
+    {
+        int x = -1;
+        int offset = -1;
+        if(dir == Directions.up)
+        {
+            x = xMiddle - 1;
+            offset = -1;
+        }
+        else if(dir == Directions.down)
+        {
+            x = xMiddle;
+            offset = 1;
+        }
+
+        bool[] finished = new bool[boundaryCoordinates[1] - boundaryCoordinates[0]];
+        //keep digging until:
+        //1) you've found a room
+        //2) you've digged along an entire edge of a room
+        bool reached = false;
+        bool edgeEncountered = false;
+        int c = 0;
+        while (!reached)
+        {
+            //let's check the following walls to see if we still need to dig (true = there is a full space, false = it is empty)
+            c = 0;
+            for (int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++)
+            {
+                finished[c] = wallsArrayBitmap[columnIndex, x] == 1 ? true : false;
+                c++;
+            }
+
+            if (!MyUtility.boolContains(finished, true))
+            {
+                //I found the room
+                reached = true;
+            }
+            else if (MyUtility.boolContains(finished, false) && MyUtility.boolContains(finished, true))
+            {
+                //I found the edge of the other room, because I could dig some columns, but others no.
+                edgeEncountered = true;
+            }
+
+            if (edgeEncountered && !MyUtility.boolContains(finished, false))
+            {
+                //I would go over the room if I proceeded, so stop digging
+                reached = true;
+            }
+
+            if (!reached)
+            {
+                for (int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++)
+                {
+                    Dig(columnIndex, x);
+                }
+                x += offset;
+            }
+        }
+
+    }
+
+
+
+    //false = I didn't dig in there because it was already empty
+    //true = I actually dug there
+    private bool Dig(int z, int x)
+    {
+        //I can't dig also if I'm asked to dig outside of the dungeon
+        if(z<0 || z >= width || x<0 || x>= height || wallsArrayBitmap[z,x] == 0)
+        {
+            return false;
+        }
+        else
+        {
+            wallsArrayBitmap[z, x] = 0;
+            return true;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        private void Update()
     {
         for (int j = 0; j < height; j++)
         {
