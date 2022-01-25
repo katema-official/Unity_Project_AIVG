@@ -768,36 +768,40 @@ public class LabyrinthGenerator2 : MonoBehaviour
         int secondCorridorWidth = angleCorridorsHaveSameWidth ? firstCorridorWidth : Random.Range(minimumCorridorWidth, maximumCorridorWitdh + 1);
         secondCorridorWidth = Mathf.Min(secondCorridorWidth, rightRoom[1].z - rightRoom[0].z);
 
+        necessaryDig1 = rightRoom[0].z - leftRoom[1].z;
         necessaryDig2 = secondCorridorWidth;
         randomDig = Random.Range(0, rightRoom[1].z - rightRoom[0].z - necessaryDig2 + 1);
 
         int p;          //1 = first dig right, then down. 0 = first dig right, then up.
         Directions d;
         int offset;
+        int low_highBound;
+        int xToStart;
         if (leftRoom[0].x <= rightRoom[0].x)
         {
-            necessaryDig1 = rightRoom[0].x - leftRoom[1].x;
             p = 0;
             d = Directions.up;
             offset = -1;
+            low_highBound = Mathf.Min(leftRoom[1].x, rightRoom[0].x);
+            xToStart = Random.Range(leftRoom[0].x, (low_highBound - firstCorridorWidth) + 1);
+            xToStart = xToStart < leftRoom[0].x ? leftRoom[0].x : xToStart;     //to make sure we dig starting from the room
         }
         else
         {
-            necessaryDig1 = leftRoom[0].x - rightRoom[1].x;
-            p = 1;      //forse vanno invertiti
+            p = 1;      
             d = Directions.down;
             offset = 0;
+            low_highBound = Mathf.Max(leftRoom[0].x, rightRoom[1].x);
+            xToStart = Random.Range(low_highBound, (leftRoom[1].x - firstCorridorWidth) + 1);
+            xToStart = xToStart > (leftRoom[1].x - firstCorridorWidth) ? (leftRoom[1].x - firstCorridorWidth) : xToStart;   //as above
+
         }
-
-        int lowerBound = Mathf.Min(rightRoom[0].x, leftRoom[1].x);
-        int xToStart = Random.Range(leftRoom[0].x, (lowerBound - firstCorridorWidth) + 1);
-        xToStart = xToStart < leftRoom[0].x ? leftRoom[0].x : xToStart;
-
 
         for (int i = 0; i < firstCorridorWidth; i++)
         {
             finished = Dig(leftRoom[1].z, xToStart + i, necessaryDig1 + necessaryDig2 + randomDig, Directions.right) || finished;
         }
+        Debug.Log("dig = " + (necessaryDig1 + necessaryDig2 + randomDig));
 
         int zToStart = 0;
         if (!finished)
@@ -816,23 +820,9 @@ public class LabyrinthGenerator2 : MonoBehaviour
             }
         }
 
+        
         bool end = false;
-        int x = rightRoom[p].x;
-        int upOrDown = p == 1 ? 1 : -1;
-        d = d == Directions.up ? Directions.down : Directions.up;
-        if (!finished) {
-            while (!end)
-            {
-                x += upOrDown;
-                for (int i = zToStart; i < zToStart + secondCorridorWidth; i++)
-                {
-                    end = Dig(i, x, 1, d) || end;
-                }
-            }
-        }
-
-        end = false;
-        int z = rightRoom[1].z - 1;
+        int z = leftRoom[1].z;
         while (!end)
         {
             z--;
@@ -841,6 +831,24 @@ public class LabyrinthGenerator2 : MonoBehaviour
                 end = Dig(z, j, 1, Directions.left) || end;
             }
         }
+
+        int x = rightRoom[p].x;
+        int upOrDown = p == 1 ? -1 : 1;
+        x = p == 1 ? (x - 1) : x;
+        d = d == Directions.up ? Directions.down : Directions.up;
+        if (!finished) {
+            while (!end)
+            {
+                for (int i = zToStart; i < zToStart + secondCorridorWidth; i++)
+                {
+                    end = Dig(i, x, 1, d) || end;
+                }
+                x += upOrDown;
+            }
+        }
+        
+        LVectors.Add(new Point[] { leftRoom[0], rightRoom[0] });
+
     }
 
 
