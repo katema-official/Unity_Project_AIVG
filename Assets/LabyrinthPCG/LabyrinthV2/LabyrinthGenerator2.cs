@@ -149,7 +149,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
 
         if (heightOfNode / 2 >= smallestPartitionX)
         {
-            //Debug.Log("Horizontal cut is possible");
             possibleCutDimensions.Add(PTConstants.horizontalCutID);   //means "you can cut horizontally"
             //I use "heightOfNode/2" because I want to know if, by dividing the room along this
             //direction by exactly half, I would be able to get two new nodes that can contain
@@ -159,7 +158,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
 
         if (widthOfNode / 2 >= smallestPartitionZ)
         {
-            //Debug.Log("Vertical cut is possible");
             possibleCutDimensions.Add(PTConstants.verticalCutID);   //means "you can cut vertically"
         }
 
@@ -172,8 +170,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
             currentNode.right_child = null;
             return currentNode;
         }
-
-        //Debug.Log("Number of possible axis to perform the cut: " + possibleCutDimensions.Count);
 
         //if the list is not empty, we can choose a random cut axis from it
         int i = Random.Range(0, possibleCutDimensions.Count);
@@ -299,7 +295,6 @@ public class LabyrinthGenerator2 : MonoBehaviour
             {
                 for (int i = room_z0; i < room_z0 + z_length; i++)
                 {
-                    //Debug.Log("Removing (" + i + "," + j + ")");
                     Destroy(wallsArray.get(i, j));
                     wallsArray.set(i, j, null);
                 }
