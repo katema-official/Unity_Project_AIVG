@@ -55,8 +55,13 @@ public class LabyrinthGenerator3 : MonoBehaviour
     public int minimumVerticalCorridorWidth = 1;
     public int maximumVerticalCorridorWitdh = 1;
 
+    //since sometimes the start function will return without an initialization, because some cosntrains
+    //were not respected, we need a variable to avoid calling the update when not needed.
+    private bool initialized;
+
     private void Start()
     {
+        initialized = false;
         wallsArray = new GameObject[width, height];
         Debug.Log("Inizio start");
         //no 0-dimension rooms allowed
@@ -103,6 +108,7 @@ public class LabyrinthGenerator3 : MonoBehaviour
 
         //----------CORRIDORS INITIALIZATION----------
         generateCorridors(root);
+        initialized = true;
     }
 
 
@@ -689,6 +695,7 @@ public class LabyrinthGenerator3 : MonoBehaviour
 
     private void Update()
     {
+        if (!initialized) return;
         for (int j = 0; j < height; j++)
         {
             for (int i = 0; i < width; i++)

@@ -9,7 +9,8 @@ public class RotateWithMouse : MonoBehaviour
     public float RotationSpeed = 5;
     public float XMovementSpeedFraction = 5;
     public float ZMovementSpeedFraction = 5;
-    public float YMovementSpeed = 0.5f;
+    public float YMovementSpeed = 0.1f;
+    public GameObject reference;
 
     void Update()
     {
@@ -31,11 +32,11 @@ public class RotateWithMouse : MonoBehaviour
         //Io però al voglio muovere anche su e giù
         if (Input.GetKey(KeyCode.Space))
         {
-            transform.Translate(0, YMovementSpeed, 0);
+            transform.Translate(0, reference.transform.position.y + YMovementSpeed, 0);
         }
         else if (Input.GetKey(KeyCode.LeftShift))
         {
-            transform.Translate(0, -YMovementSpeed, 0);
+            transform.Translate(0, reference.transform.position.y - YMovementSpeed, 0);
         }
 
 
