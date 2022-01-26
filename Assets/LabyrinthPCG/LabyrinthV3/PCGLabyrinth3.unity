@@ -240,13 +240,13 @@ MonoBehaviour:
   unitScale: 1
   z0: 0
   x0: 0
-  width: 11
-  height: 11
-  smallestPartitionZ: 4
-  smallestPartitionX: 4
+  width: 100
+  height: 100
+  smallestPartitionZ: 15
+  smallestPartitionX: 15
   roomsMustBeSeparated: 1
-  minimumRoomZ: 2
-  minimumRoomX: 2
+  minimumRoomZ: 30
+  minimumRoomX: 30
   RandomSeed: 0
   minimumHorizontalCorridorWidth: 1
   maximumHorizontalCorridorWitdh: 1

@@ -34,7 +34,8 @@ public class LabyrinthGenerator3 : MonoBehaviour
     public bool roomsMustBeSeparated = true;
 
     //the user can specify a minimum width and height that the generated rooms
-    //must have.
+    //must have. Note that the generated rooms won't necessarily have this dimension
+    //but the algorithm will try to generate rooms larger then those value if possible.
     public int minimumRoomZ = 1;
     public int minimumRoomX = 1;
 
@@ -70,6 +71,7 @@ public class LabyrinthGenerator3 : MonoBehaviour
             return;
         }
 
+        /*
         //If, for minimumRoomZ/X a value greater then smallestPartitionZ/X is supplied, it is rounded to smallestPartitionZ/X
         if (roomsMustBeSeparated)
         {
@@ -81,6 +83,7 @@ public class LabyrinthGenerator3 : MonoBehaviour
             minimumRoomZ = minimumRoomZ <= smallestPartitionZ ? minimumRoomZ : smallestPartitionZ;
             minimumRoomX = minimumRoomX <= smallestPartitionX ? minimumRoomX : smallestPartitionX;
         }
+        */
 
         wallsArray = new GameObject[width, height];
 
@@ -285,33 +288,17 @@ public class LabyrinthGenerator3 : MonoBehaviour
             
             int minimumRoomZCalculated = (int)Mathf.Floor(generationAreaZ / 2) + 1;
             int minimumRoomXCalculated = (int)Mathf.Floor(generationAreaX / 2) + 1;
-            minimumRoomZ = Mathf.Max(minimumRoomZ, minimumRoomZCalculated);
-            minimumRoomX = Mathf.Max(minimumRoomX, minimumRoomXCalculated);
-
-            //...still, the room must stay inside the given partition, of course
-            
-
-
-
-
+            int minZ = Mathf.Max(minimumRoomZ, minimumRoomZCalculated);
+            int minX = Mathf.Max(minimumRoomX, minimumRoomXCalculated);
 
             Debug.LogFormat("(genAreaZ, genAreaX) = ({6},{7}). For room inside area ({0},{1}) - ({2},{3}) i choose (zLen,xLen) = ({4},{5})", 
                 current.p1.z, current.p1.x, current.p2.z, current.p2.x, minimumRoomZ, minimumRoomX, generationAreaZ, generationAreaX);
 
-            int room_z0 = obtainStartingCoordinateForRoom(current.p1.z, minimumRoomZ, actualPartitionZ, roomsMustBeSeparated);
-            int room_x0 = obtainStartingCoordinateForRoom(current.p1.x, minimumRoomX, actualPartitionX, roomsMustBeSeparated);
+            int room_z0 = obtainStartingCoordinateForRoom(current.p1.z, minZ, actualPartitionZ, roomsMustBeSeparated);
+            int room_x0 = obtainStartingCoordinateForRoom(current.p1.x, minX, actualPartitionX, roomsMustBeSeparated);
             //given the point, I can randomly calculate the length of the room in that axis following the constrains
-            int z_length = obtainLengthForRoom(current.p1.z, minimumRoomZ, actualPartitionZ, roomsMustBeSeparated, room_z0);
-            int x_length = obtainLengthForRoom(current.p1.x, minimumRoomX, actualPartitionX, roomsMustBeSeparated, room_x0);
-            //we make sure the length is not too much
-            int min;
-            int max;
-            min = 0;
-            max = actualPartitionZ - (roomsMustBeSeparated == true ? 2 : 0);
-            z_length = Mathf.Clamp(z_length, min, max);
-            max = actualPartitionX - (roomsMustBeSeparated == true ? 2 : 0);
-            x_length = Mathf.Clamp(x_length, min, max);
-
+            int z_length = obtainLengthForRoom(current.p1.z, minZ, actualPartitionZ, roomsMustBeSeparated, room_z0);
+            int x_length = obtainLengthForRoom(current.p1.x, minX, actualPartitionX, roomsMustBeSeparated, room_x0);
 
             //now, for this leaf node, i can set its room points
             current.setRoomSquares(new Square(room_z0, room_x0), new Square(room_z0 + z_length, room_x0 + x_length));
@@ -342,6 +329,8 @@ public class LabyrinthGenerator3 : MonoBehaviour
 
         }
         maxExclusive -= minLength;  //this way I'm sure that the point I'll give will allow me to generate a room large enough as required
+        //if the minLength requested is more then the actual length i can free for this room, i make this room the biggest possible
+        maxExclusive = Mathf.Clamp(maxExclusive, minInclusive, minCoordinate + partitionLength);
         return Random.Range(minInclusive, maxExclusive + 1);
     }
 
@@ -353,8 +342,12 @@ public class LabyrinthGenerator3 : MonoBehaviour
             maxValue -= 1;
         }
         //the length of the room has a minimum, and the maximum possible value is the distance between the startingPoint
-        return Random.Range(minLength, Mathf.Abs(maxValue - startingValue) + 1);
+        int ret = Random.Range(minLength, Mathf.Abs(maxValue - startingValue) + 1);
 
+        //we make sure the length is not too much
+        int max = partitionLength - (roomsMustBeSeparated == true ? 2 : 0);
+        ret = Mathf.Clamp(ret, 0, max);
+        return ret;
     }
 
 
