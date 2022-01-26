@@ -81,6 +81,37 @@ public class LabyrinthGenerator3 : MonoBehaviour
             minimumRoomZ = minimumRoomZ <= smallestPartitionZ ? minimumRoomZ : smallestPartitionZ;
             minimumRoomX = minimumRoomX <= smallestPartitionX ? minimumRoomX : smallestPartitionX;
         }
+
+        //------------------------
+
+        //Also, to be sure that all the partitions will generate two rooms that can be directly connected, we have to impose some constrains on the minimum
+        //room dimensions on the Z and X axis. Let's take the Z axis as an example, same goes for X axis:
+        //If smallestPartitionZ = 4 and roomsMustBeSeparated = true, It means that in some partitions (long 4 units on the Z axis), I won't be able to
+        //generate rooms longer then 3 units (in this example its length on the Z axis would be max 2), so the user must provide me a small enough value
+        //for the minimumRoomZ.
+        int generationAreaZ;
+        int generationAreaX;
+        if (roomsMustBeSeparated)
+        {
+            generationAreaZ = smallestPartitionZ - 2;
+            generationAreaX = smallestPartitionX - 2;
+        }
+        else
+        {
+            generationAreaZ = smallestPartitionZ;
+            generationAreaX = smallestPartitionX;
+        }
+        int minimumRoomZCalculated = (int) Mathf.Floor(generationAreaZ / 2) + 1;
+        int minimumRoomXCalculated = (int) Mathf.Floor(generationAreaX / 2) + 1;
+        if(minimumRoomZ > minimumRoomZCalculated || minimumRoomX > minimumRoomXCalculated)
+        {
+            return;
+        }
+
+        //-------------------------
+
+
+
         wallsArray = new GameObject[width, height];
 
         //for being stochastic or deterministic
