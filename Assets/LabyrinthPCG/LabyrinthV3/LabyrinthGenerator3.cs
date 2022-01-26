@@ -384,15 +384,8 @@ public class LabyrinthGenerator3 : MonoBehaviour
                 Debug.LogFormat("min = {0}, max = {1}", minSearch, maxSearch);
                 //now, for each possible z value between the minimum and the maximum, check: is that coordinate, that
                 //represents a column, one on which both rooms lie for at least one unit?
-                List<int> available_Z_coordinates = new List<int>();
-                for (int i = minSearch; i < maxSearch; i++)
-                {
-                    if (leftChildRoomPoints[0].z <= i && i < leftChildRoomPoints[1].z && rightChildRoomPoints[0].z <= i && i < rightChildRoomPoints[1].z)
-                    {
-                        available_Z_coordinates.Add(i);
-                    }
-                }
-
+                List<int> available_Z_coordinates = getZIntersections(minSearch, maxSearch, leftChildRoomPoints, rightChildRoomPoints);
+                
                 //based on that information, tell me the left and right walls (coordinates on z axis) for this corridor
                 boundaryCoordinates = generateDirectCorridorBoundCoordinates_HorizontalCut(available_Z_coordinates, corridorWidth, leftChildRoomPoints[1].z);
 
@@ -409,7 +402,7 @@ public class LabyrinthGenerator3 : MonoBehaviour
                 break;
 
             case PTConstants.verticalCutID:
-                corridorWidth = Random.Range(minimumHorizontalCorridorWidth, maximumHorizontalCorridorWitdh + 1);
+                corridorWidth = Random.Range(minimumVerticalCorridorWidth, maximumVerticalCorridorWitdh + 1);
 
                 minSearch = Mathf.Min(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,
                     rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);
@@ -418,70 +411,27 @@ public class LabyrinthGenerator3 : MonoBehaviour
 
                 Debug.LogFormat("verticalCutID: ({0},{1}) -> ({2},{3})", leftChildRoomPoints[0].x, leftChildRoomPoints[1].x, rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);
 
-
-                List<int> available_X_coordinates = new List<int>();
-                for (int i = maxSearch - 1; i >= minSearch; i--)
-                {
-                    if (leftChildRoomPoints[0].x <= i && i < leftChildRoomPoints[1].x && rightChildRoomPoints[0].x <= i && i < rightChildRoomPoints[1].x)
-                    {
-                        available_X_coordinates.Add(i);
-                    }
-                }
+                List<int> available_X_coordinates = getXIntersections(minSearch, maxSearch, leftChildRoomPoints, rightChildRoomPoints);
 
                 //here we have unfortunately to distinguish two cases:
                 //1) the left room is below the right one
                 //2) the left room is above the right one
-                int p = -1;
                 Square[] boundChild;
-                if(leftChildRoomPoints[0].x >= rightChildRoomPoints[0].x)
+                if(leftChildRoomPoints[0].x <= rightChildRoomPoints[0].x)
                 {
-                    p = 0;
-                    boundChild = leftChildRoomPoints;
-                }
-                else
-                {
-                    p = 1;
                     boundChild = rightChildRoomPoints;
                 }
-                
-                boundaryCoordinates = generateDirectCorridorBoundCoordinates_VerticalCut(available_X_coordinates, corridorWidth, boundChild[0].x);
-                LVectors.Add(new Square[] { new Square(current.cutWhere, boundaryCoordinates[0]), new Square(current.cutWhere, boundaryCoordinates[1]) });
-                generateHorizontalCorridorFromCut(current.cutWhere, boundaryCoordinates);
-                
-                /*
                 else
                 {
-                    if (allowSimplerCorridors && available_X_coordinates.Count >= minimumCorridorWidth)
-                    {
-                        int[] boundaryCoordinates = new int[] { available_X_coordinates[0], available_X_coordinates[available_X_coordinates.Count - 1] };
-                        generateHorizontalCorridorFromCut(current.cutWhere, boundaryCoordinates);
-                    }
-                    else
-                    {
-                        Point[] roomOnTheLeft;
-                        Point[] roomOnTheRight;
+                    boundChild = leftChildRoomPoints;
+                }
 
-                        if (leftChildRoomPoints[0].z <= rightChildRoomPoints[0].z)
-                        {
-                            roomOnTheLeft = leftChildRoomPoints;
-                            roomOnTheRight = rightChildRoomPoints;
-                        }
-                        else
-                        {
-                            roomOnTheLeft = rightChildRoomPoints;
-                            roomOnTheRight = leftChildRoomPoints;
-                        }
-
-                        //DigLShapedCorridorForVerticalCut(roomOnTheLeft, roomOnTheRight, corridorWidth);
-
-                    }
-                }*/
+                boundaryCoordinates = generateDirectCorridorBoundCoordinates_VerticalCut(available_X_coordinates, corridorWidth, boundChild[1].x);
+                LVectors.Add(new Square[] { new Square(current.cutWhere, boundaryCoordinates[0]), new Square(current.cutWhere, boundaryCoordinates[1]) });
+                generateHorizontalCorridorFromCut(current.cutWhere, boundaryCoordinates);
                 break;
                 
         }
-
-
-
 
 
         //in the end, after having merged the two rooms, we can return to our parent the coordinates (in points)
@@ -489,9 +439,39 @@ public class LabyrinthGenerator3 : MonoBehaviour
         return new Square[] { current.room_p1, current.room_p2 };
     }
 
+
+
+    private List<int> getZIntersections(int minSearch, int maxSearch, Square[] leftChildRoomPoints, Square[] rightChildRoomPoints)
+    {
+        List<int> common = new List<int>();
+        for (int i = minSearch; i < maxSearch; i++)
+        {
+            if (leftChildRoomPoints[0].z <= i && i < leftChildRoomPoints[1].z && rightChildRoomPoints[0].z <= i && i < rightChildRoomPoints[1].z)
+            {
+                common.Add(i);
+            }
+        }
+        return common;
+    }
+
+    private List<int> getXIntersections(int minSearch, int maxSearch, Square[] leftChildRoomPoints, Square[] rightChildRoomPoints) 
+    {
+        List<int> common = new List<int>();
+        for (int i = minSearch; i < maxSearch; i++)
+        {
+            if (leftChildRoomPoints[0].x <= i && i < leftChildRoomPoints[1].x && rightChildRoomPoints[0].x <= i && i < rightChildRoomPoints[1].x)
+            {
+                common.Add(i);
+            }
+        }
+        return common;
+    }
+
+
+
+
     private int[] generateDirectCorridorBoundCoordinates_HorizontalCut(List<int> listOfAvailableCoordinates, int requiredWidth, int rightBound)
     {
-        Debug.LogFormat("list count = {0}", listOfAvailableCoordinates.Count);
         if(listOfAvailableCoordinates[0] > rightBound - requiredWidth)
         {
             return new int[] {rightBound - requiredWidth, rightBound};
@@ -499,42 +479,19 @@ public class LabyrinthGenerator3 : MonoBehaviour
 
         int leftWall = Random.Range(listOfAvailableCoordinates[0], listOfAvailableCoordinates[listOfAvailableCoordinates.Count - 1] - requiredWidth + 2);
         int rightWall = leftWall + requiredWidth;
-        //Debug.LogFormat("leftWall = {0}, rightWall = {1}", leftWall, rightWall);
-        //Debug.LogFormat("listOfAvailableCoordinates[0] = {0}, listOfAvailableCoordinates[Last] - rw + 2 = {1}",listOfAvailableCoordinates[0],
-        //    listOfAvailableCoordinates[listOfAvailableCoordinates.Count - 1] - requiredWidth + 2);
         return new int[] { leftWall, rightWall };
     }
 
     private int[] generateDirectCorridorBoundCoordinates_VerticalCut(List<int> listOfAvailableCoordinates, int requiredWidth, int bound)
     {
-        if (listOfAvailableCoordinates[0] < bound + requiredWidth)
+        if (listOfAvailableCoordinates[0] > bound - requiredWidth)
         {
-            return new int[] { bound + requiredWidth, bound };
+            return new int[] { bound - requiredWidth, bound };
         }
 
-        int bottomWall = Random.Range(listOfAvailableCoordinates[0], listOfAvailableCoordinates[listOfAvailableCoordinates.Count - 1] + requiredWidth - 2);
-        int topWall = bottomWall - requiredWidth;
-        Debug.LogFormat("bottom = {0}, top = {1}", bottomWall, topWall);
-        return new int[] { topWall, bottomWall };
-
-
-
-        /*
-        if(upOrDown == 0)           //left room below right one
-        {
-            if (listOfAvailableCoordinates[0] > bound - requiredWidth)
-            {
-                return new int[] { bound - requiredWidth, bound };
-            }
-        }
-        else                        //left room above right one
-        {
-            if (listOfAvailableCoordinates[0] > bound - requiredWidth)
-            {
-                return new int[] { bound - requiredWidth, bound };
-            }
-        }
-        */
+        int leftWall = Random.Range(listOfAvailableCoordinates[0], listOfAvailableCoordinates[listOfAvailableCoordinates.Count - 1] - requiredWidth + 2);
+        int rightWall = leftWall + requiredWidth;
+        return new int[] { leftWall, rightWall };
     }
 
     private void generateVerticalCorridorFromCut(int xMiddle, int[] boundaryCoordinates)
@@ -682,11 +639,13 @@ public class LabyrinthGenerator3 : MonoBehaviour
                 reached = true;
             }
 
+            bool b;
             if (!reached)
             {
                 for (int rowIndex = boundaryCoordinates[0]; rowIndex < boundaryCoordinates[1]; rowIndex++)
                 {
-                    Dig(z, rowIndex);
+                    b = Dig(z, rowIndex);
+                    Debug.LogFormat("Did I in ({0},{1})? {2}", z, rowIndex, b);
                 }
                 z += offset;
             }

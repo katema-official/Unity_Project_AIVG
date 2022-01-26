@@ -245,13 +245,13 @@ MonoBehaviour:
   smallestPartitionZ: 15
   smallestPartitionX: 15
   roomsMustBeSeparated: 1
-  minimumRoomZ: 5
-  minimumRoomX: 5
-  RandomSeed: 1748732732
-  minimumHorizontalCorridorWidth: 1
-  maximumHorizontalCorridorWitdh: 1
-  minimumVerticalCorridorWidth: 1
-  maximumVerticalCorridorWitdh: 1
+  minimumRoomZ: 8
+  minimumRoomX: 8
+  RandomSeed: 1802996576
+  minimumHorizontalCorridorWidth: 2
+  maximumHorizontalCorridorWitdh: 3
+  minimumVerticalCorridorWidth: 3
+  maximumVerticalCorridorWitdh: 4
 --- !u!4 &916226686
 Transform:
   m_ObjectHideFlags: 0
