@@ -251,7 +251,7 @@ MonoBehaviour:
   minimumHorizontalCorridorWidth: 1
   maximumHorizontalCorridorWitdh: 1
   minimumVerticalCorridorWidth: 1
-  maximumVerticalCorridorWitdh: 5
+  maximumVerticalCorridorWitdh: 1
 --- !u!4 &916226686
 Transform:
   m_ObjectHideFlags: 0
