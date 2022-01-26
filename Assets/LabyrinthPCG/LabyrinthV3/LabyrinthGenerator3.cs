@@ -82,36 +82,6 @@ public class LabyrinthGenerator3 : MonoBehaviour
             minimumRoomX = minimumRoomX <= smallestPartitionX ? minimumRoomX : smallestPartitionX;
         }
 
-        //------------------------
-
-        //Also, to be sure that all the partitions will generate two rooms that can be directly connected, we have to impose some constrains on the minimum
-        //room dimensions on the Z and X axis. Let's take the Z axis as an example, same goes for X axis:
-        //If smallestPartitionZ = 4 and roomsMustBeSeparated = true, It means that in some partitions (long 4 units on the Z axis), I won't be able to
-        //generate rooms longer then 3 units (in this example its length on the Z axis would be max 2), so the user must provide me a small enough value
-        //for the minimumRoomZ.
-        int generationAreaZ;
-        int generationAreaX;
-        if (roomsMustBeSeparated)
-        {
-            generationAreaZ = smallestPartitionZ - 2;
-            generationAreaX = smallestPartitionX - 2;
-        }
-        else
-        {
-            generationAreaZ = smallestPartitionZ;
-            generationAreaX = smallestPartitionX;
-        }
-        int minimumRoomZCalculated = (int) Mathf.Floor(generationAreaZ / 2) + 1;
-        int minimumRoomXCalculated = (int) Mathf.Floor(generationAreaX / 2) + 1;
-        if(minimumRoomZ > minimumRoomZCalculated || minimumRoomX > minimumRoomXCalculated)
-        {
-            return;
-        }
-
-        //-------------------------
-
-
-
         wallsArray = new GameObject[width, height];
 
         //for being stochastic or deterministic
@@ -295,11 +265,53 @@ public class LabyrinthGenerator3 : MonoBehaviour
             //So, let's consider those constrains while calculating the room points
             int actualPartitionZ = Mathf.Abs(current.p1.z - current.p2.z);
             int actualPartitionX = Mathf.Abs(current.p1.x - current.p2.x);
+
+            //Actually there are other constrains. The room generated must be large enough to cover at least 1/4 of
+            //the partition given in order to make sure it will be possible to connect this room to the other.
+            //This is way our algorithm will always prefer rooms large as required by the user, but, if necessary,
+            //will generate smaller rooms.
+            int generationAreaZ;
+            int generationAreaX;
+            if (roomsMustBeSeparated)
+            {
+                generationAreaZ = actualPartitionZ - 2;
+                generationAreaX = actualPartitionX - 2;
+            }
+            else
+            {
+                generationAreaZ = actualPartitionZ;
+                generationAreaX = actualPartitionX;
+            }
+            
+            int minimumRoomZCalculated = (int)Mathf.Floor(generationAreaZ / 2) + 1;
+            int minimumRoomXCalculated = (int)Mathf.Floor(generationAreaX / 2) + 1;
+            minimumRoomZ = Mathf.Max(minimumRoomZ, minimumRoomZCalculated);
+            minimumRoomX = Mathf.Max(minimumRoomX, minimumRoomXCalculated);
+
+            //...still, the room must stay inside the given partition, of course
+            
+
+
+
+
+
+            Debug.LogFormat("(genAreaZ, genAreaX) = ({6},{7}). For room inside area ({0},{1}) - ({2},{3}) i choose (zLen,xLen) = ({4},{5})", 
+                current.p1.z, current.p1.x, current.p2.z, current.p2.x, minimumRoomZ, minimumRoomX, generationAreaZ, generationAreaX);
+
             int room_z0 = obtainStartingCoordinateForRoom(current.p1.z, minimumRoomZ, actualPartitionZ, roomsMustBeSeparated);
             int room_x0 = obtainStartingCoordinateForRoom(current.p1.x, minimumRoomX, actualPartitionX, roomsMustBeSeparated);
             //given the point, I can randomly calculate the length of the room in that axis following the constrains
             int z_length = obtainLengthForRoom(current.p1.z, minimumRoomZ, actualPartitionZ, roomsMustBeSeparated, room_z0);
             int x_length = obtainLengthForRoom(current.p1.x, minimumRoomX, actualPartitionX, roomsMustBeSeparated, room_x0);
+            //we make sure the length is not too much
+            int min;
+            int max;
+            min = 0;
+            max = actualPartitionZ - (roomsMustBeSeparated == true ? 2 : 0);
+            z_length = Mathf.Clamp(z_length, min, max);
+            max = actualPartitionX - (roomsMustBeSeparated == true ? 2 : 0);
+            x_length = Mathf.Clamp(x_length, min, max);
+
 
             //now, for this leaf node, i can set its room points
             current.setRoomSquares(new Square(room_z0, room_x0), new Square(room_z0 + z_length, room_x0 + x_length));
