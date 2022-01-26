@@ -57,6 +57,8 @@ public class LabyrinthGenerator3 : MonoBehaviour
 
     private void Start()
     {
+        wallsArray = new GameObject[width, height];
+        Debug.Log("Inizio start");
         //no 0-dimension rooms allowed
         if(minimumRoomZ <= 0 || minimumRoomX <= 0)
         {
@@ -71,21 +73,11 @@ public class LabyrinthGenerator3 : MonoBehaviour
             return;
         }
 
-        /*
-        //If, for minimumRoomZ/X a value greater then smallestPartitionZ/X is supplied, it is rounded to smallestPartitionZ/X
-        if (roomsMustBeSeparated)
+        //Just to make my work simpler, I assume that the maximum width of a corridor can't be more then the partition
+        if (maximumHorizontalCorridorWitdh > smallestPartitionX || maximumVerticalCorridorWitdh > smallestPartitionZ)
         {
-            minimumRoomZ = minimumRoomZ <= smallestPartitionZ - 2 ? minimumRoomZ : smallestPartitionZ - 2;  //-2 because I want at least one unit of space
-            minimumRoomX = minimumRoomX <= smallestPartitionX - 2 ? minimumRoomX : smallestPartitionX - 2;  //at the edges of the partition
+            return;
         }
-        else
-        {
-            minimumRoomZ = minimumRoomZ <= smallestPartitionZ ? minimumRoomZ : smallestPartitionZ;
-            minimumRoomX = minimumRoomX <= smallestPartitionX ? minimumRoomX : smallestPartitionX;
-        }
-        */
-
-        wallsArray = new GameObject[width, height];
 
         //for being stochastic or deterministic
         if (RandomSeed == 0) RandomSeed = (int)System.DateTime.Now.Ticks;
@@ -100,6 +92,7 @@ public class LabyrinthGenerator3 : MonoBehaviour
             for (int i = 0; i < width; i++)
             {
                 wallsArrayBitmap[i, j] = 1;
+                wallsArray[i, j] = null;
             }
         }
 
@@ -228,7 +221,6 @@ public class LabyrinthGenerator3 : MonoBehaviour
                 Debug.Log("Something went wrong when deciding on which dimension to cut (should never happen)");
                 break;
         }
-
         return currentNode;
 
     }
@@ -291,8 +283,8 @@ public class LabyrinthGenerator3 : MonoBehaviour
             int minZ = Mathf.Max(minimumRoomZ, minimumRoomZCalculated);
             int minX = Mathf.Max(minimumRoomX, minimumRoomXCalculated);
 
-            Debug.LogFormat("(genAreaZ, genAreaX) = ({6},{7}). For room inside area ({0},{1}) - ({2},{3}) i choose (zLen,xLen) = ({4},{5})", 
-                current.p1.z, current.p1.x, current.p2.z, current.p2.x, minimumRoomZ, minimumRoomX, generationAreaZ, generationAreaX);
+            //Debug.LogFormat("(genAreaZ, genAreaX) = ({6},{7}). For room inside area ({0},{1}) - ({2},{3}) i choose (zLen,xLen) = ({4},{5})", 
+            //    current.p1.z, current.p1.x, current.p2.z, current.p2.x, minimumRoomZ, minimumRoomX, generationAreaZ, generationAreaX);
 
             int room_z0 = obtainStartingCoordinateForRoom(current.p1.z, minZ, actualPartitionZ, roomsMustBeSeparated);
             int room_x0 = obtainStartingCoordinateForRoom(current.p1.x, minX, actualPartitionX, roomsMustBeSeparated);
@@ -389,17 +381,7 @@ public class LabyrinthGenerator3 : MonoBehaviour
         current.setRoomSquares(top_left, bottom_right);
         roomsConnected.Add(new Square[] { top_left, bottom_right });
 
-
-
-        //now, this is where things get complicated. We have to distingush two scenarios:
-        //1) we can generate a direct corridor between these two rooms
-        //2) we have to generate a L shaped corridor (help)
-        
-
-
-
-        //ok, that's the width. Now let's see: if we were to create a direct corridor between these two rooms (the
-        //case we are all hoping for), what's the space we have at hand to do that, relatively also to the cut orientation?
+        //we can now actually think about how to generate the corridor
         int minSearch = 0;
         int maxSearch = 0;
         int corridorWidth;
@@ -409,6 +391,8 @@ public class LabyrinthGenerator3 : MonoBehaviour
             case PTConstants.horizontalCutID:
                 //What will be the width of this corridor?
                 corridorWidth = Random.Range(minimumVerticalCorridorWidth, maximumVerticalCorridorWitdh + 1);
+                //actually, the corridor can't be larger then the room, so:
+                corridorWidth = Mathf.Clamp(corridorWidth, 0, leftChildRoomPoints[1].z - leftChildRoomPoints[0].z);
 
                 //if the cut was done horizontally, then we have to search all the possible "columns" eligible for building a direct corridor.
                 minSearch = Mathf.Min(leftChildRoomPoints[0].z, leftChildRoomPoints[1].z,
@@ -421,9 +405,10 @@ public class LabyrinthGenerator3 : MonoBehaviour
                 //now, for each possible z value between the minimum and the maximum, check: is that coordinate, that
                 //represents a column, one on which both rooms lie for at least one unit?
                 List<int> available_Z_coordinates = getZIntersections(minSearch, maxSearch, leftChildRoomPoints, rightChildRoomPoints);
-                
+
+                Debug.Log("Vertical cut, corridor width: " + corridorWidth);
                 //based on that information, tell me the left and right walls (coordinates on z axis) for this corridor
-                boundaryCoordinates = generateDirectCorridorBoundCoordinates_HorizontalCut(available_Z_coordinates, corridorWidth, leftChildRoomPoints[1].z);
+                boundaryCoordinates = generateDirectCorridorBoundCoordinates(available_Z_coordinates, corridorWidth, leftChildRoomPoints[1].z);
 
                 LVectors.Add(new Square[] { new Square(boundaryCoordinates[0], current.cutWhere), new Square(boundaryCoordinates[1], current.cutWhere) });
 
@@ -439,6 +424,7 @@ public class LabyrinthGenerator3 : MonoBehaviour
 
             case PTConstants.verticalCutID:
                 corridorWidth = Random.Range(minimumVerticalCorridorWidth, maximumVerticalCorridorWitdh + 1);
+                corridorWidth = Mathf.Clamp(corridorWidth, 0, leftChildRoomPoints[1].x - leftChildRoomPoints[0].x);
 
                 minSearch = Mathf.Min(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,
                     rightChildRoomPoints[0].x, rightChildRoomPoints[1].x);
@@ -462,7 +448,8 @@ public class LabyrinthGenerator3 : MonoBehaviour
                     boundChild = leftChildRoomPoints;
                 }
 
-                boundaryCoordinates = generateDirectCorridorBoundCoordinates_VerticalCut(available_X_coordinates, corridorWidth, boundChild[1].x);
+                Debug.Log("Vertical cut, corridor width: " + corridorWidth);
+                boundaryCoordinates = generateDirectCorridorBoundCoordinates(available_X_coordinates, corridorWidth, boundChild[1].x);
                 LVectors.Add(new Square[] { new Square(current.cutWhere, boundaryCoordinates[0]), new Square(current.cutWhere, boundaryCoordinates[1]) });
                 generateHorizontalCorridorFromCut(current.cutWhere, boundaryCoordinates);
                 break;
@@ -506,23 +493,11 @@ public class LabyrinthGenerator3 : MonoBehaviour
 
 
 
-    private int[] generateDirectCorridorBoundCoordinates_HorizontalCut(List<int> listOfAvailableCoordinates, int requiredWidth, int rightBound)
+    private int[] generateDirectCorridorBoundCoordinates(List<int> listOfAvailableCoordinates, int requiredWidth, int rightBound)
     {
         if(listOfAvailableCoordinates[0] > rightBound - requiredWidth)
         {
             return new int[] {rightBound - requiredWidth, rightBound};
-        }
-
-        int leftWall = Random.Range(listOfAvailableCoordinates[0], listOfAvailableCoordinates[listOfAvailableCoordinates.Count - 1] - requiredWidth + 2);
-        int rightWall = leftWall + requiredWidth;
-        return new int[] { leftWall, rightWall };
-    }
-
-    private int[] generateDirectCorridorBoundCoordinates_VerticalCut(List<int> listOfAvailableCoordinates, int requiredWidth, int bound)
-    {
-        if (listOfAvailableCoordinates[0] > bound - requiredWidth)
-        {
-            return new int[] { bound - requiredWidth, bound };
         }
 
         int leftWall = Random.Range(listOfAvailableCoordinates[0], listOfAvailableCoordinates[listOfAvailableCoordinates.Count - 1] - requiredWidth + 2);
@@ -566,6 +541,7 @@ public class LabyrinthGenerator3 : MonoBehaviour
             c = 0;
             for (int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++)
             {
+                Debug.LogFormat("columnIndex = {0}, x = {1}", columnIndex, x);
                 finished[c] = wallsArrayBitmap[columnIndex, x] == 1 ? true : false;
                 c++;
             }
@@ -595,6 +571,13 @@ public class LabyrinthGenerator3 : MonoBehaviour
                 }
                 x += offset;
             }
+
+            //if we are trying to dig outside the dungeon, then we have finished
+            if(x < 0 || x > width - 1)
+            {
+                reached = true;
+            }
+
         }
     }
 
@@ -627,7 +610,7 @@ public class LabyrinthGenerator3 : MonoBehaviour
 
     private void digHorizontallyInSearchForRoom(int zMiddle, int[] boundaryCoordinates, Directions dir)
     {
-        Debug.LogFormat("zMiddle = {0}, boundCoord 0 and 1 = {1},{2}", zMiddle, boundaryCoordinates[1], boundaryCoordinates[0]);
+        Debug.LogFormat("zMiddle = {0}, boundCoord 1 and 0 = {1},{2}", zMiddle, boundaryCoordinates[1], boundaryCoordinates[0]);
         int z = -1;
         int offset = -1;
         if (dir == Directions.left)
@@ -685,6 +668,11 @@ public class LabyrinthGenerator3 : MonoBehaviour
                 }
                 z += offset;
             }
+
+            if (z < 0 || z > height - 1)
+            {
+                reached = true;
+            }
         }
     }
 
@@ -709,8 +697,7 @@ public class LabyrinthGenerator3 : MonoBehaviour
                 //or in [i,j] there is a 0 and no gameObject, don't touch.
                 //if instead the two values are not the same, change the wallsArray accordingly to the wallsArrayBitmap
 
-                //put a unit
-                if(wallsArrayBitmap[i, j] == 1 && wallsArray[i, j] == null)
+                if (wallsArrayBitmap[i, j] == 1 && wallsArray[i, j] == null)
                 {
                     GameObject g = Instantiate(unit);
                     g.transform.position = new Vector3(x0 + j*unitScale + unitScale/2,0,z0 + i*unitScale + unitScale/2);
@@ -720,6 +707,7 @@ public class LabyrinthGenerator3 : MonoBehaviour
                 {
                     //destroy the unit
                     Destroy(wallsArray[i, j]);
+                    wallsArray[i, j] = null;
                 }
             }
         }
