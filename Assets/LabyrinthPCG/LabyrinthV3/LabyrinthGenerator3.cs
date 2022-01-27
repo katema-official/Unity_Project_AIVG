@@ -66,6 +66,7 @@ public class LabyrinthGenerator3 : MonoBehaviour
         //no 0-dimension rooms allowed
         if(minimumRoomZ <= 0 || minimumRoomX <= 0)
         {
+            UnityEditor.EditorUtility.DisplayDialog("Error", "The minimum room dimension must be > 0", "OK");
             return;
         }
 
@@ -74,12 +75,14 @@ public class LabyrinthGenerator3 : MonoBehaviour
         //to generate that corridor.
         if(minimumHorizontalCorridorWidth > minimumRoomX || minimumVerticalCorridorWidth > minimumRoomZ)
         {
+            UnityEditor.EditorUtility.DisplayDialog("Error", "The minimum width for a corridor can't be more than the minimum room width", "OK");
             return;
         }
 
         //Just to make my work simpler, I assume that the maximum width of a corridor can't be more then the partition
         if (maximumHorizontalCorridorWitdh > smallestPartitionX || maximumVerticalCorridorWitdh > smallestPartitionZ)
         {
+            UnityEditor.EditorUtility.DisplayDialog("Error", "The maximum width for a corridor can't be more than the parition width", "OK");
             return;
         }
 
@@ -428,15 +431,6 @@ public class LabyrinthGenerator3 : MonoBehaviour
 
                 List<int> available_X_coordinates = getXIntersections(minSearch, maxSearch, leftChildRoomPoints, rightChildRoomPoints);
 
-                if (leftChildRoomPoints[0].z == 6 && leftChildRoomPoints[0].x == 1)
-                {
-                    Debug.Log("Z = 6, X = 1");
-                    foreach (int elem in available_X_coordinates)
-                    {
-                        Debug.Log("Coordinate Z available: " + elem);
-                    }
-                }
-
                 //here we have unfortunately to distinguish two cases:
                 //1) the left room is below the right one
                 //2) the left room is above the right one
@@ -451,12 +445,6 @@ public class LabyrinthGenerator3 : MonoBehaviour
                 }
 
                 boundaryCoordinates = generateDirectCorridorBoundCoordinates(available_X_coordinates, corridorWidth, boundChild[1].x);
-
-                if (leftChildRoomPoints[0].z == 6 && leftChildRoomPoints[0].x == 1)
-                {
-                    Debug.Log("il rightBound (che poi dovrebbe essere lowerBound) è (4?) " + boundChild[1].x);
-                    Debug.LogFormat("boundary coordinates: {0} and {1} (on x axis)", boundaryCoordinates[0], boundaryCoordinates[1]);
-                }
 
                 LVectors.Add(new Square[] { new Square(current.cutWhere, boundaryCoordinates[0]), new Square(current.cutWhere, boundaryCoordinates[1]) });
                 generateHorizontalCorridorFromCut(current.cutWhere, boundaryCoordinates);
@@ -503,11 +491,6 @@ public class LabyrinthGenerator3 : MonoBehaviour
 
     private int[] generateDirectCorridorBoundCoordinates(List<int> listOfAvailableCoordinates, int requiredWidth, int rightBound)
     {
-        if (listOfAvailableCoordinates[0] == 1 && listOfAvailableCoordinates[1] == 2)
-        {
-            Debug.LogFormat("In questa funzione: {0}, {1}, poi {2}, e {3}", listOfAvailableCoordinates[0], listOfAvailableCoordinates[1], requiredWidth, rightBound);
-        }
-        
         if(listOfAvailableCoordinates[0] > rightBound - requiredWidth)
         {
             return new int[] {rightBound - requiredWidth, rightBound};
