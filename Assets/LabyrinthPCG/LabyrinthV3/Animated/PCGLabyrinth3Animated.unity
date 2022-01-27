@@ -230,13 +230,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1813028588}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: 0.5, y: -0.5, z: 0.5, w: 0.5}
+  m_LocalPosition: {x: 50, y: 100, z: 50}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 90}
 --- !u!114 &1813028592
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -356,7 +356,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2025106241}
-  - component: {fileID: 2025106240}
   - component: {fileID: 2025106242}
   m_Layer: 0
   m_Name: LabyrinthGenerator3
@@ -365,35 +364,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2025106240
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2025106239}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bacc619e81c6dce45a19b3073e3b1e17, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  unit: {fileID: 3426741760763179013, guid: b885306ce5789f2418553073ce2aa4dd, type: 3}
-  heightOfWalls: 1
-  unitScale: 1
-  z0: 0
-  x0: 0
-  width: 100
-  height: 100
-  smallestPartitionZ: 5
-  smallestPartitionX: 5
-  roomsMustBeSeparated: 1
-  minimumRoomZ: 2
-  minimumRoomX: 2
-  RandomSeed: 0
-  minimumHorizontalCorridorWidth: 1
-  maximumHorizontalCorridorWitdh: 3
-  minimumVerticalCorridorWidth: 1
-  maximumVerticalCorridorWitdh: 3
 --- !u!4 &2025106241
 Transform:
   m_ObjectHideFlags: 0
@@ -420,20 +390,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d740e6eccd68ad3459d8c46284c5cd38, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unit: {fileID: 0}
-  heightOfWalls: 5
+  unit: {fileID: 3426741760763179013, guid: b885306ce5789f2418553073ce2aa4dd, type: 3}
+  heightOfWalls: 1
   unitScale: 1
   z0: 0
   x0: 0
-  width: 100
-  height: 100
-  smallestPartitionZ: 4
-  smallestPartitionX: 4
+  width: 250
+  height: 250
+  smallestPartitionZ: 25
+  smallestPartitionX: 25
   roomsMustBeSeparated: 1
-  minimumRoomZ: 1
-  minimumRoomX: 1
+  minimumRoomZ: 5
+  minimumRoomX: 5
   RandomSeed: 0
   minimumHorizontalCorridorWidth: 1
-  maximumHorizontalCorridorWitdh: 1
-  minimumVerticalCorridorWidth: 1
-  maximumVerticalCorridorWitdh: 1
+  maximumHorizontalCorridorWitdh: 2
+  minimumVerticalCorridorWidth: 2
+  maximumVerticalCorridorWitdh: 3
+  delayInGeneration: 0.01

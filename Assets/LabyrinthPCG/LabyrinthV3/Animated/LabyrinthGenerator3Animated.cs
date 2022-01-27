@@ -92,6 +92,13 @@ public class LabyrinthGenerator3Animated : MonoBehaviour
             return;
         }
 
+        //and of course...
+        if(minimumHorizontalCorridorWidth > maximumHorizontalCorridorWitdh || minimumVerticalCorridorWidth > maximumVerticalCorridorWitdh)
+        {
+            UnityEditor.EditorUtility.DisplayDialog("Error", "The minimum width for a corridor can't be more than the maximum width for a corridor", "OK");
+            return;
+        }
+
         //for being stochastic or deterministic
         if (RandomSeed == 0) RandomSeed = (int)System.DateTime.Now.Ticks;
         Random.InitState(RandomSeed);
@@ -731,8 +738,6 @@ public class LabyrinthGenerator3Animated : MonoBehaviour
             if (dungeonQueue.Count > 0)
             {
                 myWallsArrayBitmap = (int[,])dungeonQueue.Dequeue();
-                Debug.Log("elements number: " + dungeonQueue.Count);
-
                 if (initialized)
                 {
                     for (int j = 0; j < height; j++)
