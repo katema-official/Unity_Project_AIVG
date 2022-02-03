@@ -43,3 +43,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bf8207a5add83c4f8b13e804da74443, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  roomMaterial: {fileID: 2100000, guid: 99abca3572042de4ca026e1ba9d748c2, type: 2}
+  corridorEntranceMaterial: {fileID: 2100000, guid: 47fe383a171e77f4192f677dd115441b, type: 2}
+  roomCorridorMaterial: {fileID: 2100000, guid: 18806fa9170d9a64fbf5604aaaca025e, type: 2}
+  intersectionMaterial: {fileID: 2100000, guid: b48e76431b8fb584a9ad1ff95083479d, type: 2}
+  delayInGeneration: 1
+  animated: 1

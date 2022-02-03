@@ -50,6 +50,9 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
     //the actual labyrinth
     private GameObject[,] wallsArray;
 
+    //the root node of the tree that represents the dungeon
+    private static Node root;
+
     //----------VARIABLES TO GENERATE THE CORRIDORS----------
 
     public int minimumHorizontalCorridorWidth = 1;
@@ -70,7 +73,7 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
 
     private void Start()
     {
-        GameObject.Instantiate(graphGenerator);
+        graphGenerator = GameObject.Find("GraphGenerator");
 
         dungeonQueue = new Queue();
         initialized = false;
@@ -109,7 +112,7 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
         if (RandomSeed == 0) RandomSeed = (int)System.DateTime.Now.Ticks;
         Random.InitState(RandomSeed);
 
-        Node root = generatePartitioningTree();
+        root = generatePartitioningTree();
         //now we have the tree.
         //First of all, let's generate a labyrinth that is only made of walls
         wallsArrayBitmap = new int[width, height];
@@ -130,6 +133,8 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
 
         //----------CORRIDORS INITIALIZATION----------
         generateCorridors(root);
+
+        //----------ANIMATION AND LABYRINTH DRAWING----------
 
         if (!animated)
         {
@@ -335,6 +340,9 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
             //for visualization
             int[,] d = (int[,])wallsArrayBitmap.Clone();
             dungeonQueue.Enqueue(d);
+
+            //let's tell to the graph that the center of this room is a (room) node
+            addNode(room_z0 + (int) Mathf.Floor((z_length - 1)/2), room_x0 + (int) Mathf.Floor((x_length - 1)/2), 0);
         }
     }
 
@@ -575,11 +583,19 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
             {
                 //I found the room
                 reached = true;
+
+                //GRAPH: let's tell to the graph that this is the entrance of a corridor
+                addNode(boundaryCoordinates[0] + (int)Mathf.Floor((boundaryCoordinates[1] - boundaryCoordinates[0] - 1) / 2), 
+                    x, 1);
             }
             else if (MyUtility.boolContains(finished, false) && MyUtility.boolContains(finished, true))
             {
                 //I found the edge of the other room, because I could dig some columns, but others no.
                 edgeEncountered = true;
+
+                //GRAPH: let's tell to the graph that this is the entrance of a corridor
+                addNode(boundaryCoordinates[0] + (int)Mathf.Floor((boundaryCoordinates[1] - boundaryCoordinates[0] - 1) / 2),
+                    x, 1);
             }
 
             if (edgeEncountered && !MyUtility.boolContains(finished, false))
@@ -669,11 +685,17 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
             {
                 //I found the room
                 reached = true;
+
+                //GRAPH: let's tell to the graph that this is the entrance of a corridor
+                addNode(z, boundaryCoordinates[0] + (int)Mathf.Floor((boundaryCoordinates[1] - boundaryCoordinates[0] - 1) / 2), 1);
             }
             else if (MyUtility.boolContains(finished, false) && MyUtility.boolContains(finished, true))
             {
                 //I found the edge of the other room, because I could dig some columns, but others no.
                 edgeEncountered = true;
+
+                //GRAPH: let's tell to the graph that this is the entrance of a corridor
+                addNode(z, boundaryCoordinates[0] + (int)Mathf.Floor((boundaryCoordinates[1] - boundaryCoordinates[0] - 1) / 2), 1);
             }
 
             if (edgeEncountered && !MyUtility.boolContains(finished, false))
@@ -718,6 +740,9 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
         {
             fromBitmapToDungeon(finalWallsArrayBitmap);
         }
+
+        //----------GRAPH FINALIZATION-----------
+        generateBitmapsForGraphGenerator(root);
     }
 
     private void fromBitmapToDungeon(int[,] myWallsArrayBitmap)
@@ -783,4 +808,45 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
             Gizmos.DrawLine(new Vector3(points[0].x, 1, points[0].z), new Vector3(points[1].x, 1, points[1].z));
         }
     }
+
+
+
+    //----------GENERATION OF THE NODES OF THE GRAPH------------
+    //function used to add a room node to the graph, where (z,x) represent the center of the room
+    //if type = 0, we want to add a room node. If type = 1, we want to add a corridor entrance node.
+    private void addNode(int z, int x, int type)
+    {
+        graphGenerator.GetComponent<GraphGeneratorAnimated>().addNode(z, x, type);
+    }
+
+    //function used to set the two bitmaps of the graph
+    private void generateBitmapsForGraphGenerator(Node root)
+    {
+        int[,] corridorsBitmap = (int[,]) finalWallsArrayBitmap.Clone();
+        generateCorridorsBitmap(root, corridorsBitmap);
+        graphGenerator.GetComponent<GraphGeneratorAnimated>().setBitmaps(finalWallsArrayBitmap, corridorsBitmap);
+    }
+
+    private void generateCorridorsBitmap(Node current, int[,] corridorBitmap)
+    {
+        //base case: a room has been reached, so set to 1 all the points inside the room (we don't want them in
+        //this corridor bitmap, so we will consider them as full spaces)
+        if(current.left_child == null && current.right_child == null)
+        {
+            for(int i = current.room_p1.z; i < current.room_p2.z; i++)
+            {
+                for (int j = current.room_p1.x; j < current.room_p2.x; j++)
+                {
+                    corridorBitmap[i, j] = 1;
+                }
+            }
+        }
+        else
+        {
+            generateCorridorsBitmap(current.left_child, corridorBitmap);
+            generateCorridorsBitmap(current.right_child, corridorBitmap);
+        }
+    }
+
+
 }
