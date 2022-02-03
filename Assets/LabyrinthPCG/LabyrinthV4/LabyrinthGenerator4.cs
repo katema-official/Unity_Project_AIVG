@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using PartitioningTree3;
+using PartitioningTree4;
+using System.Linq;
 
-public class LabyrinthGenerator3Animated : MonoBehaviour
+public class LabyrinthGenerator4 : MonoBehaviour
 {
-
     //----------VARIABLES FOR GENERATING THE ROOMS----------
 
     //the gameobject to use in order to create the labyrinth
@@ -59,14 +59,8 @@ public class LabyrinthGenerator3Animated : MonoBehaviour
     //were not respected, we need a variable to avoid calling the update when not needed.
     private bool initialized;
 
-    //----------LOGIC FOR SEEING THE EVOLUTION OF THE DUNGEON-----------
-    public float delayInGeneration;
-
-    private Queue dungeonQueue;
-
     private void Start()
     {
-        dungeonQueue = new Queue();
         initialized = false;
         wallsArray = new GameObject[width, height];
         //no 0-dimension rooms allowed
@@ -92,13 +86,6 @@ public class LabyrinthGenerator3Animated : MonoBehaviour
             return;
         }
 
-        //and of course...
-        if(minimumHorizontalCorridorWidth > maximumHorizontalCorridorWitdh || minimumVerticalCorridorWidth > maximumVerticalCorridorWitdh)
-        {
-            UnityEditor.EditorUtility.DisplayDialog("Error", "The minimum width for a corridor can't be more than the maximum width for a corridor", "OK");
-            return;
-        }
-
         //for being stochastic or deterministic
         if (RandomSeed == 0) RandomSeed = (int)System.DateTime.Now.Ticks;
         Random.InitState(RandomSeed);
@@ -116,8 +103,6 @@ public class LabyrinthGenerator3Animated : MonoBehaviour
             }
         }
 
-        StartCoroutine(drawLabyrinth());
-
         //now we have to remove some of those walls in order to generate our rooms. To do that,
         //we traverse the tree we have built, and when we'll find a leaf, we'll know that
         //all the walls inside that node need to be removed
@@ -127,6 +112,7 @@ public class LabyrinthGenerator3Animated : MonoBehaviour
         generateCorridors(root);
         initialized = true;
     }
+
 
 
 
@@ -322,10 +308,6 @@ public class LabyrinthGenerator3Animated : MonoBehaviour
                     wallsArrayBitmap[i, j] = 0;
                 }
             }
-
-            //for visualization
-            int[,] d = (int[,])wallsArrayBitmap.Clone();
-            dungeonQueue.Enqueue(d);
         }
     }
 
@@ -470,8 +452,6 @@ public class LabyrinthGenerator3Animated : MonoBehaviour
 
         }
 
-        int[,] d = (int[,])wallsArrayBitmap.Clone();
-        dungeonQueue.Enqueue(d);
 
         //in the end, after having merged the two rooms, we can return to our parent the coordinates (in points)
         //of our new room.
@@ -699,7 +679,7 @@ public class LabyrinthGenerator3Animated : MonoBehaviour
 
 
 
-    /*
+
     private void Update()
     {
         if (!initialized) return;
@@ -726,48 +706,11 @@ public class LabyrinthGenerator3Animated : MonoBehaviour
                 }
             }
         }
-    }*/
-
-
-
-    public IEnumerator drawLabyrinth()
-    {
-        int[,] myWallsArrayBitmap;
-        while (true)
-        {
-            if (dungeonQueue.Count > 0)
-            {
-                myWallsArrayBitmap = (int[,])dungeonQueue.Dequeue();
-                if (initialized)
-                {
-                    for (int j = 0; j < height; j++)
-                    {
-                        for (int i = 0; i < width; i++)
-                        {
-                            //draw the actual labyrinth. If in [i,j] there is a 1 and there is a gameobject,
-                            //or in [i,j] there is a 0 and no gameObject, don't touch.
-                            //if instead the two values are not the same, change the wallsArray accordingly to the wallsArrayBitmap
-
-                            if (myWallsArrayBitmap[i, j] == 1 && wallsArray[i, j] == null)
-                            {
-                                GameObject g = Instantiate(unit);
-                                g.transform.position = new Vector3(x0 + j * unitScale + unitScale / 2, 0, z0 + i * unitScale + unitScale / 2);
-                                g.transform.localScale = new Vector3(unitScale, heightOfWalls, unitScale);
-                                wallsArray[i, j] = g;
-                            }
-                            else if (myWallsArrayBitmap[i, j] == 0 && wallsArray[i, j] != null)
-                            {
-                                //destroy the unit
-                                Destroy(wallsArray[i, j]);
-                                wallsArray[i, j] = null;
-                            }
-                        }
-                    }
-                }
-            }
-            yield return new WaitForSeconds(delayInGeneration);
-        }
     }
+
+
+
+
 
 
 
@@ -806,5 +749,7 @@ public class LabyrinthGenerator3Animated : MonoBehaviour
             Gizmos.color = Color.yellow;
             Gizmos.DrawLine(new Vector3(points[0].x, 1, points[0].z), new Vector3(points[1].x, 1, points[1].z));
         }
+
     }
+
 }
