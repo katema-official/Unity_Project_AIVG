@@ -588,7 +588,7 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
                 addNode(boundaryCoordinates[0] + (int)Mathf.Floor((boundaryCoordinates[1] - boundaryCoordinates[0] - 1) / 2), 
                     x, 1);
             }
-            else if (MyUtility.boolContains(finished, false) && MyUtility.boolContains(finished, true))
+            else if (MyUtility.boolContains(finished, false) && MyUtility.boolContains(finished, true) && !edgeEncountered)
             {
                 //I found the edge of the other room, because I could dig some columns, but others no.
                 edgeEncountered = true;
@@ -689,7 +689,7 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
                 //GRAPH: let's tell to the graph that this is the entrance of a corridor
                 addNode(z, boundaryCoordinates[0] + (int)Mathf.Floor((boundaryCoordinates[1] - boundaryCoordinates[0] - 1) / 2), 1);
             }
-            else if (MyUtility.boolContains(finished, false) && MyUtility.boolContains(finished, true))
+            else if (MyUtility.boolContains(finished, false) && MyUtility.boolContains(finished, true) && !edgeEncountered)
             {
                 //I found the edge of the other room, because I could dig some columns, but others no.
                 edgeEncountered = true;

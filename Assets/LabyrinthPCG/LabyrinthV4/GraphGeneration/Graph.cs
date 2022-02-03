@@ -42,4 +42,30 @@ public class Graph
 		return data.Keys.ToArray();
 	}
 
+	//function to check if at given coordinates there is a node
+	public bool isNodeAtCoordinates(int z, int x)
+    {
+		foreach(GNode n in getNodes())
+        {
+			if(n.z == z && n.x == x)
+            {
+				return true;
+            }
+        }
+		return false;
+    }
+
+	//function used to get a node at some given coordinates
+	public GNode getNodeAtCoordinates(int z, int x)
+    {
+		foreach (GNode n in getNodes())
+		{
+			if (n.z == z && n.x == x)
+			{
+				return n;
+			}
+		}
+		return null;
+	}
+
 }

@@ -25,8 +25,11 @@ public class GraphGeneratorAnimated : MonoBehaviour
     //for animation
     public float delayInGeneration;
     public bool animated;
-
+    private List<GameObject> cubesList;
     private bool canDraw;
+
+    //to have access to the LabyrinthGenarator
+    LabyrinthGenerator4Animated c;
 
     // Start is called before the first frame update
     void Start()
@@ -35,6 +38,7 @@ public class GraphGeneratorAnimated : MonoBehaviour
         //    GameObject.Find("LabyrinthGenerator4").GetComponent<LabyrinthGenerator4Animated>().height];
         //corridorBitmap = new int[GameObject.Find("LabyrinthGenerator4").GetComponent<LabyrinthGenerator4Animated>().width,
         //    GameObject.Find("LabyrinthGenerator4").GetComponent<LabyrinthGenerator4Animated>().height];
+        c = GameObject.Find("LabyrinthGenerator4").GetComponent<LabyrinthGenerator4Animated>();
         StartCoroutine(drawNodes());
         
     }
@@ -43,6 +47,7 @@ public class GraphGeneratorAnimated : MonoBehaviour
     {
         nodesList = new List<GNode>();
         graph = new Graph();
+        cubesList = new List<GameObject>();
     }
 
 
@@ -90,8 +95,15 @@ public class GraphGeneratorAnimated : MonoBehaviour
         dungeonBitmap = normalBitmap;
         corridorBitmap = corridorsBitmap;
 
+        //now, we have the room nodes and the corridor entrance nodes. What we still lack of are the intersection nodes.
+        //To find them, we have to scan all the point of the corridors and see if those can see, in the 4 cardinal directions,
+        //at least 3 other points, that can be of any kind: corridor points, other intersection points or room points (even
+        //thought those shouldn't be visible since we have hidden them in the corridors bitmap).
+        findIntersections(corridorsBitmap);
+        
 
-        //qui devo chiamare una funzione
+
+
         canDraw = true;
 
 
@@ -143,10 +155,8 @@ public class GraphGeneratorAnimated : MonoBehaviour
         {
             delayInGeneration = 0f;
         }
-        LabyrinthGenerator4Animated c = GameObject.Find("LabyrinthGenerator4").GetComponent<LabyrinthGenerator4Animated>();
+        
 
-        print(graph);
-        print(nodesList);
         foreach (GNode n in nodesList)
         {
             GameObject g = Instantiate(c.unit);
@@ -167,16 +177,96 @@ public class GraphGeneratorAnimated : MonoBehaviour
             {
                 g.GetComponent<MeshRenderer>().material = intersectionMaterial;
             }
+            cubesList.Add(g);
             yield return new WaitForSeconds(delayInGeneration);
         }
-
-
-
-
-
     }
 
+    private void findIntersections(int[,] corridorsBitmap)
+    {
+        //we search among all the points with value 0 in the bitmap
+        for(int j = 0; j< c.height; j++)
+        {
+            for(int i = 0; i < c.width; i++)
+            {
+                //if the bitmap value is 0, it is a corridor and must be checked.
+                //we must also check that, in that position, there isn't a corridor entrance.
+                if(corridorBitmap[i,j] == 0 && graph.isNodeAtCoordinates(i,j) == false)
+                {
+                    int cubesVisible = lookAround(i, j, corridorBitmap);
+                    if(cubesVisible >= 3)
+                    {
+                        GNode n = new GNode(i, j);
+                        n.is_intersection = true;
+                        graph.AddNode(n);
+                        nodesList.Add(n);
+                    }
+                }
+            }
+        }
+    }
 
+    //function used by FindIntersections to see how many cubes (or rather, how many roomNodes/CorridorEntranceNodes/IntersectionNodes)
+    //are around him. This function will look in all the four cardinal directions in respect to the given coordinates, see if one of those cubes is
+    //visible (one is enough, if i.e. there are two on the north we are not interesed in the second) and add 1 to the result.
+    private int lookAround(int z, int x, int[,] corridorBitmap)
+    {
+        int res = 0;
+        res += lookUp(z, x, corridorBitmap);
+        res += lookDown(z, x, corridorBitmap);
+        res += lookRight(z, x, corridorBitmap);
+        res += lookLeft(z, x, corridorBitmap);
+        return res;
+    }
+
+    //functions used to look in the four cardinal directions by LookAround
+    private int lookUp(int z, int x, int[,] corridorBitmap)
+    {
+        while (true)
+        {
+            x = x - 1;
+            //first of all, check if we went outside of the dungeon
+            if (x < 0) return 0;
+            //then, we want to check if there is a node at this coordinates.
+            //if there is,then yes, a node is visible in this direction.
+            if (graph.isNodeAtCoordinates(z, x)) return 1;
+            //if not, check: is this a wall, for our bitmap?
+            if(corridorBitmap[z,x] == 1) return 0;
+        }
+    }
+
+    private int lookDown(int z, int x, int[,] corridorBitmap)
+    {
+        while (true)
+        {
+            x = x + 1;
+            if (x >= c.height) return 0;
+            if (graph.isNodeAtCoordinates(z, x)) return 1;
+            if (corridorBitmap[z, x] == 1)return 0;
+        }
+    }
+
+    private int lookLeft(int z, int x, int[,] corridorBitmap)
+    {
+        while (true)
+        {
+            z = z - 1;
+            if (z < 0) return 0;
+            if (graph.isNodeAtCoordinates(z, x)) return 1;
+            if (corridorBitmap[z, x] == 1) return 0;
+        }
+    }
+
+    private int lookRight(int z, int x, int[,] corridorBitmap)
+    {
+        while (true)
+        {
+            z = z + 1;
+            if (z >= c.width) return 0;
+            if (graph.isNodeAtCoordinates(z, x)) return 1;
+            if (corridorBitmap[z, x] == 1) return 0;
+        }
+    }
 
 
     // Update is called once per frame
