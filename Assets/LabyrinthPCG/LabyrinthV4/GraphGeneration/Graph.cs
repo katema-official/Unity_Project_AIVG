@@ -47,10 +47,7 @@ public class Graph
     {
 		foreach(GNode n in getNodes())
         {
-			if(n.z == z && n.x == x)
-            {
-				return true;
-            }
+			if(n.z == z && n.x == x) {return true;}
         }
 		return false;
     }
@@ -60,12 +57,19 @@ public class Graph
     {
 		foreach (GNode n in getNodes())
 		{
-			if (n.z == z && n.x == x)
-			{
-				return n;
-			}
+			if (n.z == z && n.x == x) {return n;}
 		}
 		return null;
 	}
+
+	//function used to check if there is and edge between two nodes (sueful for animation)
+	public bool areNodesConnected(GNode f, GNode t)
+    {
+		foreach(GEdge e in getConnections(f))
+        {
+			if(e.to == t) { return true; }
+        }
+		return false;
+    }
 
 }

@@ -6,12 +6,13 @@ using PartitioningTree4;
 public class LabyrinthGenerator4Animated : MonoBehaviour
 {
     //object that is responsible for the creation of the graph representing the dungeon
-    public GameObject graphGenerator;
+    private GameObject graphGenerator;
 
     //----------VARIABLES FOR GENERATING THE ROOMS----------
 
     //the gameobject to use in order to create the labyrinth
     public GameObject unit;
+    public Material wallsMaterial;
 
     //heights of the walls of the labyrinth
     public int heightOfWalls = 5;
@@ -760,6 +761,7 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
                     GameObject g = Instantiate(unit);
                     g.transform.position = new Vector3(x0 + j * unitScale + unitScale / 2, 0, z0 + i * unitScale + unitScale / 2);
                     g.transform.localScale = new Vector3(unitScale, heightOfWalls, unitScale);
+                    g.GetComponent<MeshRenderer>().material = wallsMaterial;
                     wallsArray[i, j] = g;
                 }
                 else if (myWallsArrayBitmap[i, j] == 0 && wallsArray[i, j] != null)

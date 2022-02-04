@@ -3,7 +3,13 @@ guid: 7bf8207a5add83c4f8b13e804da74443
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - roomMaterial: {instanceID: 0}
+  - corridorEntranceMaterial: {instanceID: 0}
+  - roomCorridorMaterial: {instanceID: 0}
+  - intersectionMaterial: {instanceID: 0}
+  - corridorMaterial: {instanceID: 0}
+  - unitNodes: {fileID: 3426741760763179013, guid: b885306ce5789f2418553073ce2aa4dd, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
