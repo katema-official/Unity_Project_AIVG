@@ -36,7 +36,10 @@ public class GraphGeneratorAnimated : MonoBehaviour
     public GameObject edgeObject;
 
     //to have access to the LabyrinthGenarator
-    LabyrinthGenerator4Animated c;
+    private LabyrinthGenerator4Animated c;
+
+    //the gameobject that, after we have created the graph, will use A* and spawn a flock
+    private GameObject flockAStar;
 
     // Start is called before the first frame update
     void Start()
@@ -44,6 +47,7 @@ public class GraphGeneratorAnimated : MonoBehaviour
         c = GameObject.Find("LabyrinthGenerator4").GetComponent<LabyrinthGenerator4Animated>();
         StartCoroutine(drawNodes());
         StartCoroutine(drawEdges());
+        flockAStar = GameObject.Find("FlockEscape");
     }
 
     private void Awake()
@@ -273,10 +277,24 @@ public class GraphGeneratorAnimated : MonoBehaviour
                 linesList.Add(edge);
                 yield return new WaitForSeconds(delayInGeneration);
             }
+
+            //in the end, visualize the dungeon for a bit, and then start the flock exploration
+            yield return new WaitForSeconds(3f);
         }
 
+        //destroy, if necessary, all the cubes and edges created
+        /*
+        foreach(GameObject g in cubesList)
+        {
+            Destroy(g);
+        }
+        foreach (GameObject g in linesList)
+        {
+            Destroy(g);
+        }*/
 
-
+        //the last thing to do is to pass the control to the flockAStar component
+        flockAStar.GetComponent<FlockAStar>().myInitialize(graph);
 
     }
 
