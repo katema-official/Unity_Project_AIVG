@@ -286,7 +286,6 @@ public class GraphGeneratorAnimated : MonoBehaviour
         //-it is visible? Then add an edge between the two nodes.
         //-it is not? Don't do anything.
         //if an edge is added, its weight is the distance between the two nodes in the space.
-        int i = 0;
         foreach(GNode current in graph.getNodes())
         {
             foreach(GNode other in graph.getNodes())
