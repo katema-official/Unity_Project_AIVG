@@ -11,10 +11,11 @@ public class FBoidBlending : MonoBehaviour
 	private Collider[] neighbors = new Collider[200];
 	// this must be large enough
 
-	FBoidAlign align;
-	FBoidCohesion cohesion;
-	FBoidSeparation separation;
-	FBoidWallAvoidance avoid;
+	private FBoidAlign align;
+	private FBoidCohesion cohesion;
+	private FBoidSeparation separation;
+	private FBoidWallAvoidance avoid;
+	private FSeek seek;
 
 	private void Awake()
 	{
@@ -23,6 +24,7 @@ public class FBoidBlending : MonoBehaviour
 		cohesion = GetComponent<FBoidCohesion>();
 		separation = GetComponent<FBoidSeparation>();
 		avoid = GetComponent<FBoidWallAvoidance>();
+		seek = GetComponent<FSeek>();
 	}
 
 	void FixedUpdate()
@@ -37,6 +39,7 @@ public class FBoidBlending : MonoBehaviour
 		Vector3 acc2 = cohesion.GetDirection(neighbors, count);
 		Vector3 acc3 = separation.GetDirection(neighbors, count);
 		Vector3 acc4 = avoid.GetDirection(neighbors, count);
+		Vector3 acc5 = seek.GetDirection(neighbors, count);
 
 		//if I am too close to a wall, I want to get repulsed a lot from it (actually, just the value
 		//that the user specified for me)
@@ -50,7 +53,7 @@ public class FBoidBlending : MonoBehaviour
 			acc3 = acc3 * FBoidShared.separationRepulsion;
 		}
 
-		globalDirection += acc1 + acc2 + acc3 + acc4;
+		globalDirection += acc1 + acc2 + acc3 + acc4 + acc5;
 
 		if (globalDirection != Vector3.zero)
 		{

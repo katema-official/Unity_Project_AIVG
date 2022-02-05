@@ -104,31 +104,6 @@ public class GraphGeneratorAnimated : MonoBehaviour
         dungeonBitmap = normalBitmap;
         corridorBitmap = corridorsBitmap;
 
-        string s = "";
-        for (int j = 0; j < c.height; j++)
-        {
-            for (int i = 0; i < c.width; i++)
-            {
-                s += corridorBitmap[i, j];
-            }
-            Debug.Log(s);
-            s = "";
-        }
-
-        Debug.Log("-----------NOW THE TRUE DUNGEON-------------");
-
-        s = "";
-        for (int j = 0; j < c.height; j++)
-        {
-            for (int i = 0; i < c.width; i++)
-            {
-                s += dungeonBitmap[i, j];
-            }
-            Debug.Log(s);
-            s = "";
-        }
-
-
         //now, we have the room nodes and the corridor entrance nodes. What we still lack of are the intersection nodes.
         //To find them, we have to scan all the point of the corridors and see if those can see, in the 4 cardinal directions,
         //at least 3 other points, that can be of any kind: corridor points, other intersection points or room points (even

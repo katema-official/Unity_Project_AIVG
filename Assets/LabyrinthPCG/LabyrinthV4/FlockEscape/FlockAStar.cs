@@ -6,30 +6,43 @@ public class FlockAStar : MonoBehaviour
 {
     
 
+    //The flocks we will be using will find out what's the next position (node) they have to reach in the
+    //following way:
+    //-consider the current node towards which we are heading to. Is it closer then this threshold?
+    //-Yes: then take the next node as the target to seek
+    //-No: keep moving toward the current node.
+    //When the final node will be reached, we can choose what to do (move randomly, destroy gameobjects...)
+    public static float NodeReachedThreshold = 1f;
+    public float _NodeReachedThreshold = 1f;
+
+    [Range(0f, 1f)] public float _SeekComponent = 1f;
+    public static float SeekComponent = 1f;
+
+    //actual flocking properties
+    public float radius = 1f;
+    public int count = 100;
+    public GameObject boid = null;
 
 
+    private bool canSpawnBoids = false;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        stopAtFirstHit = _stopAtFirstHit;
+        SeekComponent = _SeekComponent;
+        NodeReachedThreshold = _NodeReachedThreshold;
+
+        StartCoroutine(spawnBoids());
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-
-
-
+   
 
     //The exit is at a known position, and I have decided that it will always be the room on the upper right room.
     //To make the path long, but always a bit random, we'll choose, as starting room, one on the left side of the dungeon.
     private GNode end;
     private GNode start;
-    public static Graph graph;
+    public Graph graph;
+    public static GEdge[] path;
 
     //this still has some informations we need
     private LabyrinthGenerator4Animated c;
@@ -67,15 +80,56 @@ public class FlockAStar : MonoBehaviour
 
 
         //we can now run A* to find the shortest path from start to end
-        GEdge[] path = AStarSolver.Solve(graph, start, end, myHeuristics[(int)heuristicToUse]);
+        path = AStarSolver.Solve(graph, start, end, myHeuristics[(int)heuristicToUse]);
 
-        foreach(GEdge e in path)
-        {
-            Debug.Log("z = " + e.to.z + ", x = " + e.to.x);
-        }
+        //foreach(GEdge e in path)
+        //{
+        //    Debug.Log("z = " + e.to.z + ", x = " + e.to.x);
+        //}
+
+
+
+
+
+        //mo devo passare il percorso al seek component di ogni flock (posso renderlo statico?), e probabilmente generare qui (? sì dai) i flock stessi
+
+        //we have the path to traverse, now we can create the flocks in the starting room.
+        //Now: to make sure that the boids won't be created inside of a wall, a small radius should be used (1, for example).
+        //The problem is that if a lot of boids are created at the same time in a small space, we have some lag.
+        //To avoid this, we will spawn one boid at a time (we can decide how much time). Keep in mind that it is responsibility
+        //of the user to make sure the boids are spawned in the room and not inside walls, so I suggest not to modify the radius value:
+        //you can do it, but at your own risk.
+        //TL;DR: KEEP THE RADIUS AT 1, OR YOU WON'T BE SURE THAT THE BOIDS ARE SPAWNED INSIDE THE ROOM
+        canSpawnBoids = true;
+        
+
+
 
     }
 
+
+    private IEnumerator spawnBoids()
+    {
+        while (!canSpawnBoids)
+        {
+            yield return null;
+        }
+
+        if (boid != null)
+        {
+            for (int i = 0; i < count; i += 1)
+            {
+                GameObject go = Instantiate(boid);
+                go.transform.position = new Vector3(
+                    (path[0].from.x + c.unitScale/2) + Random.Range(-radius, radius), 
+                    c.heightOfWalls / 2,
+                    (path[0].from.z + c.unitScale / 2) + Random.Range(-radius, radius));
+                //go.transform.LookAt(transform.position + Random.insideUnitSphere * radius);
+                go.name = boid.name + " " + i;
+            }
+        }
+
+    }
 
 
 
@@ -95,8 +149,10 @@ public class FlockAStar : MonoBehaviour
 
 
     //CREDITS: Dario Maggiorini & Davide Gadia, University of Milan (Italy), Artificial Intelligence for Videogames
-    public bool stopAtFirstHit = false;
-    public Material visitedMaterial = null;
+
+    //used by AStarSolver
+    public static bool stopAtFirstHit = false;
+    public bool _stopAtFirstHit = false;
 
     public enum Heuristics { Euclidean, Manhattan, Bisector, FullBisector, Zero };
     public HeuristicFunction[] myHeuristics = { EuclideanEstimator, ManhattanEstimator, BisectorEstimator,

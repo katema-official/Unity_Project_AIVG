@@ -157,7 +157,7 @@ MonoBehaviour:
   roomCorridorMaterial: {fileID: 2100000, guid: 18806fa9170d9a64fbf5604aaaca025e, type: 2}
   intersectionMaterial: {fileID: 2100000, guid: b48e76431b8fb584a9ad1ff95083479d, type: 2}
   corridorMaterial: {fileID: 2100000, guid: 10cd3940d54e95b4ab986861fbd7ff92, type: 2}
-  delayInGeneration: 0.5
+  delayInGeneration: 0.1
   _animated: 1
   unitNodes: {fileID: 3264315968576971853, guid: 0a40876afda034444b03bc67e88ad824, type: 3}
   edgeObject: {fileID: 7670160709759333582, guid: 94c1d98f5bdaaa7418911c3ee55f50dc, type: 3}
@@ -431,8 +431,8 @@ MonoBehaviour:
   floor: {fileID: 481364124727068938, guid: 500b76417f90693438b2e86ab6ad433e, type: 3}
   unit: {fileID: 3426741760763179013, guid: b885306ce5789f2418553073ce2aa4dd, type: 3}
   wallsMaterial: {fileID: 2100000, guid: e84e7e5aa3e78aa4ba4d7034f224b526, type: 2}
-  heightOfWalls: 1
-  unitScale: 1
+  heightOfWalls: 10
+  unitScale: 5
   z0: 0
   x0: 0
   width: 20
@@ -448,7 +448,7 @@ MonoBehaviour:
   minimumVerticalCorridorWidth: 2
   maximumVerticalCorridorWitdh: 3
   delayInGeneration: 0.1
-  animated: 0
+  animated: 1
 --- !u!4 &1181948451
 Transform:
   m_ObjectHideFlags: 0
@@ -473,6 +473,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2040051976}
   - component: {fileID: 2040051977}
+  - component: {fileID: 2040051978}
   m_Layer: 0
   m_Name: FlockEscape
   m_TagString: Untagged
@@ -506,6 +507,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46835031b2102b24b97fc00a9acd0014, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stopAtFirstHit: 0
-  visitedMaterial: {fileID: 0}
+  _NodeReachedThreshold: 1
+  _SeekComponent: 1
+  radius: 1
+  count: 100
+  boid: {fileID: 8563003959428047140, guid: 6d2a2828e1ed1dd48b34f1f75cfd2797, type: 3}
+  _stopAtFirstHit: 0
   heuristicToUse: 0
+--- !u!114 &2040051978
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2040051975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c4acb28d8e1d9a4f97ef49e4c841580, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _BoidFOV: 5
+  _BoidSpeed: 10
+  _AlignComponent: 1
+  _CohesionComponent: 1
+  _SeparationComponent: 1
+  _separationThreshold: 1
+  _separationRepulsion: 1
+  _AvoidComponent: 1
+  _wallThreshold: 1
+  _wallRepulsion: 1
+  breath: 0
+  amplitude: 0.1
+  speed: 1

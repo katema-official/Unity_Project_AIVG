@@ -8,8 +8,6 @@ public delegate float HeuristicFunction(GNode from, GNode to);
 public class AStarSolver
 {
 
-	public static bool immediateStop = false;
-
 	// two set of nodes (1)
 
 	public static List<GNode> visited;
@@ -111,7 +109,7 @@ public class AStarSolver
 		// check if we reached the goal
 		if (status[goal].distance == float.MaxValue) return false;
 		// check if the first hit is ok 
-		if (immediateStop) return true;
+		if (FlockAStar.stopAtFirstHit) return true;
 		// check if all nodes in list have loger or same paths 
 		foreach (GNode n in nodeList)
 		{

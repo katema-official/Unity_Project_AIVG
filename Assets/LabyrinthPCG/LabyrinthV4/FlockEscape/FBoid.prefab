@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 8563003959428047137}
   - component: {fileID: 8563003959428047138}
   - component: {fileID: 8563003959428047139}
+  - component: {fileID: -1527889046327260753}
   m_Layer: 0
   m_Name: FBoid
   m_TagString: Untagged
@@ -33,7 +34,7 @@ Transform:
   m_GameObject: {fileID: 8563003959428047140}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 26.847122, y: 9.4464655, z: -24.17}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 200, y: 200, z: 200}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -162,3 +163,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tooCloseToWall: 0
+--- !u!114 &-1527889046327260753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8563003959428047140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44ecbf0e1d616064d99b59a35449dc20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

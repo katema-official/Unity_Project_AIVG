@@ -31,6 +31,7 @@ public class FBoidShared : MonoBehaviour
 	public static float separationRepulsion = 0f;
 
 
+
 	[Range(0f, 1f)] public float _AvoidComponent = 1f;
 	public static float AvoidComponent = 0f;
 
@@ -41,6 +42,7 @@ public class FBoidShared : MonoBehaviour
 	//repulsion factor for when we want to heavily steer away from a wall
 	public float _wallRepulsion = 10f;
 	public static float wallRepulsion = 10f;
+
 
 
 	public bool breath = false;
