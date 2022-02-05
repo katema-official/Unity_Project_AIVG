@@ -20,7 +20,7 @@ public class FBoidWallAvoidance : FBoidComponent
 				tmp = transform.position - neighbors[i].ClosestPointOnBounds(transform.position);
 				avoid += tmp.normalized / (tmp.magnitude + 0.0001f);
 
-				Debug.Log("WALL!");
+				//Debug.Log("WALL!");
 				/*
 				if (tmp.magnitude < FBoidShared.wallThreshold)
 				{

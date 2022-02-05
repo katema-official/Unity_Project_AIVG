@@ -49,6 +49,7 @@ public class FlockAStar : MonoBehaviour
 
     public void myInitialize(Graph g)
     {
+
         c = GameObject.Find("LabyrinthGenerator4").GetComponent<LabyrinthGenerator4Animated>();
         graph = g;
 
@@ -64,17 +65,22 @@ public class FlockAStar : MonoBehaviour
             if((n.is_room && candidate == null) || (n.is_room && (distanceFromUpperRight(n.z, n.x) < minDist))){candidate = n; minDist = distanceFromUpperRight(n.z, n.x); }
 
             //candidates room
-            if(n.is_room && n.z < c.width/2){startCandidates.Add(n);}
+            if(n.is_room && n.z < (c.width * c.unitScale)/2){startCandidates.Add(n);}
         }
         end = candidate;
 
+
         //if there was no room on the left side, the dungeon is probably extremely small on the width.
-        //if that happens, the starting room is chosen in a completely random way.
-        if(startCandidates.Count == 0){start = graph.getNodes()[Random.Range(0, graph.getNodes().Length)];}
-
-        //If instead the dungeon was big enough, select starting room randomly from the ones on the left
-        start = startCandidates[Random.Range(0, startCandidates.Count)];
-
+        //when that happens, the starting room is chosen in a completely random way.
+        if (startCandidates.Count == 0)
+        {
+            start = graph.getNodes()[Random.Range(0, graph.getNodes().Length)];
+        }
+        else
+        {
+            //If instead the dungeon was big enough, select starting room randomly from the ones on the left
+            start = startCandidates[Random.Range(0, startCandidates.Count)];
+        }  
         //Debug.Log("Exit: z = " + end.z + ", x = " + end.x);
         //Debug.Log("Start: z = " + start.z + ", x = " + start.x);
 
@@ -88,9 +94,6 @@ public class FlockAStar : MonoBehaviour
         //}
 
 
-
-
-
         //mo devo passare il percorso al seek component di ogni flock (posso renderlo statico?), e probabilmente generare qui (? sì dai) i flock stessi
 
         //we have the path to traverse, now we can create the flocks in the starting room.
@@ -102,9 +105,6 @@ public class FlockAStar : MonoBehaviour
         //TL;DR: KEEP THE RADIUS AT 1, OR YOU WON'T BE SURE THAT THE BOIDS ARE SPAWNED INSIDE THE ROOM
         canSpawnBoids = true;
         
-
-
-
     }
 
 
@@ -123,7 +123,7 @@ public class FlockAStar : MonoBehaviour
                 GameObject go = Instantiate(boid);
                 go.transform.position = new Vector3(
                     (path[0].from.x + c.unitScale/2) + Random.Range(-radius, radius), 
-                    0,
+                    Random.Range(-c.heightOfWalls/2, c.heightOfWalls/2),
                     (path[0].from.z + c.unitScale / 2) + Random.Range(-radius, radius));
                 //go.transform.LookAt(transform.position + Random.insideUnitSphere * radius);
                 go.name = boid.name + " " + i;
@@ -134,9 +134,9 @@ public class FlockAStar : MonoBehaviour
 
 
 
-    private float distanceFromUpperRight(int z, int x)
+    private float distanceFromUpperRight(float z, float x)
     {
-        return (Mathf.Sqrt(Mathf.Pow(c.width - z, 2) + Mathf.Pow(0 - x, 2)));
+        return (Mathf.Sqrt(Mathf.Pow(c.width * c.unitScale - z, 2) + Mathf.Pow(0 - x, 2)));
     }
 
 

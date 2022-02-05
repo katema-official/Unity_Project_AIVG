@@ -22,7 +22,7 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
     //heights of the walls of the labyrinth
     public int heightOfWalls = 5;
     //scale (x and z) of the unit of the labyrinth
-    public int unitScale = 1;
+    public float unitScale = 1;
 
     //upper left coordinates of the labyrinth
     public int z0 = 0;
@@ -79,12 +79,12 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
 
         //create the floor
         GameObject f = Instantiate(floor);
-        f.transform.position = new Vector3((x0 + height / 2)*unitScale - ((float)unitScale / 2), -(unit.transform.localScale.y * heightOfWalls)/2 - 0.01f, (z0 + width / 2)* unitScale - ((float)unitScale / 2));
+        f.transform.position = new Vector3((x0 + height / 2)*unitScale, -(unit.transform.localScale.y * heightOfWalls)/2 - 0.01f, (z0 + width / 2)* unitScale);
         f.transform.localScale = new Vector3(f.transform.localScale.x * height * unitScale, f.transform.localScale.y, f.transform.localScale.z * width * unitScale);
 
         //create the roof
         GameObject r = Instantiate(floor);
-        r.transform.position = new Vector3((x0 + height / 2) * unitScale - ((float)unitScale / 2), (unit.transform.localScale.y*heightOfWalls)/2 + 0.01f, (z0 + width / 2) * unitScale - ((float)unitScale / 2));
+        r.transform.position = new Vector3((x0 + height / 2) * unitScale, (unit.transform.localScale.y*heightOfWalls)/2 + 0.01f, (z0 + width / 2) * unitScale);
         r.transform.localScale = new Vector3(r.transform.localScale.x * height * unitScale, r.transform.localScale.y, r.transform.localScale.z * width * unitScale);
         r.transform.Rotate(180, 0, 0);
 

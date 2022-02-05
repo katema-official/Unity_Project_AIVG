@@ -15,11 +15,11 @@ public class GNode
 	public bool is_corridor_entrance;
 	public bool is_intersection;
 
-	//the coordinates (in the bitmap) of this node
-	public int z;
-	public int x;
+	//the coordinates (in the actual labyrinth) of this node
+	public float z;
+	public float x;
 
-	public GNode(int z, int x)
+	public GNode(float z, float x)
 	{
 		this.z = z;
 		this.x = x;

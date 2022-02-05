@@ -42,7 +42,7 @@ public class FBoidBlending : MonoBehaviour
 		Vector3 acc1 = align.GetDirection(neighbors, count);
 		Vector3 acc2 = cohesion.GetDirection(neighbors, count);
 		Vector3 acc3 = separation.GetDirection(neighbors, count);
-		Vector3 acc4 = avoid.GetDirection(neighbors, countWall);
+		Vector3 acc4 = avoid.GetDirection(neighborsWalls, countWall);
 		Vector3 acc5 = seek.GetDirection(neighbors, count);
 
 		//if I am too close to a wall, I want to get repulsed a lot from it (actually, just the value
@@ -52,13 +52,13 @@ public class FBoidBlending : MonoBehaviour
 		//if (acc4 != Vector3.zero)
 		//{
 
-			if (separation.tooCloseToOtherBoid)
-			{
-				//if I am too close to another boid, I want to get repulsed a lot from it (like before)
-				acc3 = acc3 * FBoidShared.separationRepulsion;
-			}
+		if (separation.tooCloseToOtherBoid)
+		{
+			//if I am too close to another boid, I want to get repulsed a lot from it
+			acc3 = acc3 * FBoidShared.separationRepulsion;
+		}
 
-			globalDirection += acc1 + acc2 + acc3 + acc4 + acc5;
+		globalDirection += acc1 + acc2 + acc3 + acc4 + acc5;
         //}
         //else
         //{

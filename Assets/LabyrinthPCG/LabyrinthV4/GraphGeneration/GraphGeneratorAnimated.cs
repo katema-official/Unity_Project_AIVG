@@ -65,7 +65,7 @@ public class GraphGeneratorAnimated : MonoBehaviour
     //functions that will be used by other classes to modify the graph we are building
     public void addNode(int z, int x, int type)
     {
-        GNode n = new GNode(z, x);
+        GNode n = new GNode(z * c.unitScale + (c.unitScale/2), x * c.unitScale + (c.unitScale / 2));
         switch (type)
         {
             //it's a room, add the node
@@ -132,7 +132,8 @@ public class GraphGeneratorAnimated : MonoBehaviour
             foreach (GNode n in nodesList)
             {
                 GameObject g = Instantiate(unitNodes);
-                g.transform.position = new Vector3(c.x0 + c.unitScale * n.x + c.unitScale / 2, 0, c.z0 + c.unitScale * n.z + c.unitScale / 2);
+                g.transform.position = new Vector3(c.x0 + n.x, 0, c.z0 + n.z);
+                g.transform.localScale = new Vector3(g.transform.localScale.x * c.unitScale, g.transform.localScale.y * c.heightOfWalls, g.transform.localScale.z * c.unitScale);
                 if (n.is_room && n.is_corridor_entrance)
                 {
                     g.GetComponent<MeshRenderer>().material = roomCorridorMaterial;
@@ -177,7 +178,7 @@ public class GraphGeneratorAnimated : MonoBehaviour
                 if(corridorBitmap[i,j] == 0 && graph.isNodeAtCoordinates(i,j) == false)
                 {
                     int cubesVisible = lookAround(i, j, dungeonBitmap);
-                    GNode n = new GNode(i, j);
+                    GNode n = new GNode(i * c.unitScale + (c.unitScale / 2), j * c.unitScale + (c.unitScale / 2));
                     if (cubesVisible >= 3)
                     {
                         n.is_intersection = true;
@@ -273,8 +274,8 @@ public class GraphGeneratorAnimated : MonoBehaviour
             {
                 GameObject edge = Instantiate(edgeObject);
                 LineRenderer lr = edge.GetComponent<LineRenderer>();
-                lr.SetPosition(0, new Vector3(e.from.x + c.unitScale / 2, 0, e.from.z + c.unitScale / 2));
-                lr.SetPosition(1, new Vector3(e.to.x + c.unitScale / 2, 0, e.to.z + c.unitScale / 2));
+                lr.SetPosition(0, new Vector3(e.from.x, 0, e.from.z));
+                lr.SetPosition(1, new Vector3(e.to.x, 0, e.to.z));
                 linesList.Add(edge);
                 yield return new WaitForSeconds(delayInGeneration);
             }
@@ -312,15 +313,15 @@ public class GraphGeneratorAnimated : MonoBehaviour
                 if (current != other)
                 {
                     RaycastHit hit;
-                    bool isThereWall = Physics.Raycast(new Vector3(current.x + c.unitScale / 2, 0, current.z + c.unitScale / 2),
-                        (new Vector3(other.x + c.unitScale / 2, 0, other.z + c.unitScale / 2) - new Vector3(current.x + c.unitScale / 2, 0, current.z + c.unitScale / 2)).normalized,
+                    bool isThereWall = Physics.Raycast(new Vector3(current.x, 0, current.z),
+                        (new Vector3(other.x, 0, other.z) - new Vector3(current.x, 0, current.z)).normalized,
                         out hit,
-                        (new Vector3(other.x + c.unitScale / 2, 0, other.z + c.unitScale / 2) - new Vector3(current.x + c.unitScale / 2, 0, current.z + c.unitScale / 2)).magnitude,
+                        (new Vector3(other.x, 0, other.z) - new Vector3(current.x, 0, current.z)).magnitude,
                         (1 << 6));
                     if (!isThereWall)
                     {
                         GEdge e = new GEdge(current, other,
-                            (new Vector3(other.x + c.unitScale / 2, 0, other.z + c.unitScale / 2) - new Vector3(current.x + c.unitScale / 2, 0, current.z + c.unitScale / 2)).magnitude);
+                            (new Vector3(other.x, 0, other.z) - new Vector3(current.x, 0, current.z)).magnitude);
                         graph.AddEdge(e);
 
                         //to avoid bloating the animation with duplicated edges

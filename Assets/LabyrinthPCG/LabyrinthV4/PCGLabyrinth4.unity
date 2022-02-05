@@ -431,8 +431,8 @@ MonoBehaviour:
   floor: {fileID: 481364124727068938, guid: 500b76417f90693438b2e86ab6ad433e, type: 3}
   unit: {fileID: 3426741760763179013, guid: b885306ce5789f2418553073ce2aa4dd, type: 3}
   wallsMaterial: {fileID: 2100000, guid: e84e7e5aa3e78aa4ba4d7034f224b526, type: 2}
-  heightOfWalls: 4
-  unitScale: 1
+  heightOfWalls: 8
+  unitScale: 5
   z0: 0
   x0: 0
   width: 20
@@ -531,11 +531,11 @@ MonoBehaviour:
   _AlignComponent: 1
   _CohesionComponent: 1
   _SeparationComponent: 1
-  _separationThreshold: 1
-  _separationRepulsion: 1
+  _separationDistance: 1
+  _separationRepulsion: 1.2
   _AvoidComponent: 1
-  _wallThreshold: 2
-  _wallRepulsion: 3
+  _wallThreshold: 1
+  _wallRepulsion: 2
   breath: 0
   amplitude: 0.1
   speed: 1
