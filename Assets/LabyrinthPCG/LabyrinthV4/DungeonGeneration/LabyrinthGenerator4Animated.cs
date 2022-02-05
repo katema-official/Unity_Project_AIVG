@@ -66,10 +66,6 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
     public int minimumVerticalCorridorWidth = 1;
     public int maximumVerticalCorridorWitdh = 1;
 
-    //since sometimes the start function will return without an initialization, because some cosntrains
-    //were not respected, we need a variable to avoid calling the update when not needed.
-    private bool initialized;
-
     //----------LOGIC FOR SEEING THE EVOLUTION OF THE DUNGEON-----------
     public float delayInGeneration;
     public bool animated = true;
@@ -94,7 +90,6 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
 
 
         dungeonQueue = new Queue();
-        initialized = false;
         wallsArray = new GameObject[width, height];
         //no 0-dimension rooms allowed
         if (minimumRoomZ <= 0 || minimumRoomX <= 0)
@@ -154,11 +149,6 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
 
         //----------ANIMATION AND LABYRINTH DRAWING----------
 
-        if (!animated)
-        {
-            delayInGeneration = 0;
-        }
-        initialized = true;
         StartCoroutine(drawLabyrinth());
     }
 
@@ -747,18 +737,17 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
         {
             while (dungeonQueue.Count > 0)
             {
-                if (initialized)
-                {
-                    fromBitmapToDungeon((int[,])dungeonQueue.Dequeue());
-                }
+                fromBitmapToDungeon((int[,])dungeonQueue.Dequeue());
                 yield return new WaitForSeconds(delayInGeneration);
             }
         }
         else
         {
+            Debug.Log("LO STO DISEGNANDO UNA VOLTA SOLA");
             fromBitmapToDungeon(finalWallsArrayBitmap);
         }
 
+        Debug.Log("ORA INIZIALIZZO IL GRAPH");
         //----------GRAPH FINALIZATION-----------
         generateBitmapsForGraphGenerator(root);
     }
@@ -789,6 +778,8 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
                 }
             }
         }
+
+        Debug.Log("ORA IL DUNGEON ESISTE");
     }
 
 

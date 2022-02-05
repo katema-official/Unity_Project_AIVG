@@ -23,7 +23,7 @@ public class GraphGeneratorAnimated : MonoBehaviour
 
     //for animation
     public float delayInGeneration;
-    public bool animated;
+    public bool _animated;
 
     private List<GNode> nodesList;
     private List<GameObject> cubesList;
@@ -104,16 +104,39 @@ public class GraphGeneratorAnimated : MonoBehaviour
         dungeonBitmap = normalBitmap;
         corridorBitmap = corridorsBitmap;
 
+        string s = "";
+        for (int j = 0; j < c.height; j++)
+        {
+            for (int i = 0; i < c.width; i++)
+            {
+                s += corridorBitmap[i, j];
+            }
+            Debug.Log(s);
+            s = "";
+        }
+
+        Debug.Log("-----------NOW THE TRUE DUNGEON-------------");
+
+        s = "";
+        for (int j = 0; j < c.height; j++)
+        {
+            for (int i = 0; i < c.width; i++)
+            {
+                s += dungeonBitmap[i, j];
+            }
+            Debug.Log(s);
+            s = "";
+        }
+
+
         //now, we have the room nodes and the corridor entrance nodes. What we still lack of are the intersection nodes.
         //To find them, we have to scan all the point of the corridors and see if those can see, in the 4 cardinal directions,
         //at least 3 other points, that can be of any kind: corridor points, other intersection points or room points (even
         //thought those shouldn't be visible since we have hidden them in the corridors bitmap).
-        findIntersections(normalBitmap, corridorsBitmap);
+        findIntersections();
         canDrawNodes = true;
 
-        //now we have to build the edges from the nodes.
-        buildEdges();
-
+        
     }
 
 
@@ -129,7 +152,7 @@ public class GraphGeneratorAnimated : MonoBehaviour
             yield return null;
         }
 
-        if (animated)
+        if (_animated)
         {
             foreach (GNode n in nodesList)
             {
@@ -160,11 +183,14 @@ public class GraphGeneratorAnimated : MonoBehaviour
                 yield return new WaitForSeconds(delayInGeneration);
             }
         }
+
+        //now we have to build the edges from the nodes.
+        buildEdges();
         //after drawing the nodes, draw the edges too
         canDrawEdges = true;
     }
 
-    private void findIntersections(int[,] normalBitmap, int[,] corridorsBitmap)
+    private void findIntersections()
     {
         //we search among all the points with value 0 in the bitmap
         for(int j = 0; j< c.height; j++)
@@ -175,7 +201,7 @@ public class GraphGeneratorAnimated : MonoBehaviour
                 //we must also check that, in that position, there isn't a corridor entrance.
                 if(corridorBitmap[i,j] == 0 && graph.isNodeAtCoordinates(i,j) == false)
                 {
-                    int cubesVisible = lookAround(i, j, normalBitmap);
+                    int cubesVisible = lookAround(i, j, dungeonBitmap);
                     GNode n = new GNode(i, j);
                     if (cubesVisible >= 3)
                     {
@@ -266,7 +292,7 @@ public class GraphGeneratorAnimated : MonoBehaviour
             yield return null;
         }
 
-        if (animated)
+        if (_animated)
         {
             foreach(GEdge e in edgesList)
             {
@@ -314,7 +340,8 @@ public class GraphGeneratorAnimated : MonoBehaviour
                     bool isThereWall = Physics.Raycast(new Vector3(current.x + c.unitScale / 2, 0, current.z + c.unitScale / 2),
                         (new Vector3(other.x + c.unitScale / 2, 0, other.z + c.unitScale / 2) - new Vector3(current.x + c.unitScale / 2, 0, current.z + c.unitScale / 2)).normalized,
                         out hit,
-                        (new Vector3(other.x + c.unitScale / 2, 0, other.z + c.unitScale / 2) - new Vector3(current.x + c.unitScale / 2, 0, current.z + c.unitScale / 2)).magnitude);
+                        (new Vector3(other.x + c.unitScale / 2, 0, other.z + c.unitScale / 2) - new Vector3(current.x + c.unitScale / 2, 0, current.z + c.unitScale / 2)).magnitude,
+                        (1 << 6));
                     if (!isThereWall)
                     {
                         GEdge e = new GEdge(current, other,
@@ -328,8 +355,6 @@ public class GraphGeneratorAnimated : MonoBehaviour
                     }
                 }
             }
-
-
         }
     }
 

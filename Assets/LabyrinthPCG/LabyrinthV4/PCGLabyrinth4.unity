@@ -157,8 +157,8 @@ MonoBehaviour:
   roomCorridorMaterial: {fileID: 2100000, guid: 18806fa9170d9a64fbf5604aaaca025e, type: 2}
   intersectionMaterial: {fileID: 2100000, guid: b48e76431b8fb584a9ad1ff95083479d, type: 2}
   corridorMaterial: {fileID: 2100000, guid: 10cd3940d54e95b4ab986861fbd7ff92, type: 2}
-  delayInGeneration: 0.01
-  animated: 1
+  delayInGeneration: 0.5
+  _animated: 1
   unitNodes: {fileID: 3264315968576971853, guid: 0a40876afda034444b03bc67e88ad824, type: 3}
   edgeObject: {fileID: 7670160709759333582, guid: 94c1d98f5bdaaa7418911c3ee55f50dc, type: 3}
 --- !u!4 &224480330
@@ -435,20 +435,20 @@ MonoBehaviour:
   unitScale: 1
   z0: 0
   x0: 0
-  width: 100
-  height: 100
-  smallestPartitionZ: 20
-  smallestPartitionX: 20
+  width: 20
+  height: 20
+  smallestPartitionZ: 10
+  smallestPartitionX: 10
   roomsMustBeSeparated: 1
   minimumRoomZ: 5
   minimumRoomX: 5
-  RandomSeed: 0
+  RandomSeed: -286606738
   minimumHorizontalCorridorWidth: 2
   maximumHorizontalCorridorWitdh: 3
   minimumVerticalCorridorWidth: 2
   maximumVerticalCorridorWitdh: 3
   delayInGeneration: 0.1
-  animated: 1
+  animated: 0
 --- !u!4 &1181948451
 Transform:
   m_ObjectHideFlags: 0
