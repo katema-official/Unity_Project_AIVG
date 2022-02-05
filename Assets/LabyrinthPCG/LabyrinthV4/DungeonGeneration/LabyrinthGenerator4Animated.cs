@@ -5,6 +5,8 @@ using PartitioningTree4;
 
 public class LabyrinthGenerator4Animated : MonoBehaviour
 {
+    private bool debug = false;
+
     //object that is responsible for the creation of the graph representing the dungeon
     private GameObject graphGenerator;
 
@@ -797,32 +799,34 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
 
     public void OnDrawGizmos()
     {
-
-        foreach (Square[] points in gizmosVectors)
+        if (debug)
         {
-            if (points[0].z == points[1].z)
+            foreach (Square[] points in gizmosVectors)
             {
-                Gizmos.color = Color.red;
+                if (points[0].z == points[1].z)
+                {
+                    Gizmos.color = Color.red;
+                }
+                else if (points[0].x == points[1].x)
+                {
+                    Gizmos.color = Color.blue;
+                }
+                Gizmos.DrawLine(
+                    new Vector3(points[0].x, 1, points[0].z),
+                    new Vector3(points[1].x, 1, points[1].z));
             }
-            else if (points[0].x == points[1].x)
+
+            foreach (Square[] points in LVectors)
             {
-                Gizmos.color = Color.blue;
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(new Vector3(points[0].x, 1, points[0].z), new Vector3(points[1].x, 1, points[1].z));
             }
-            Gizmos.DrawLine(
-                new Vector3(points[0].x, 1, points[0].z),
-                new Vector3(points[1].x, 1, points[1].z));
-        }
 
-        foreach (Square[] points in LVectors)
-        {
-            Gizmos.color = Color.green;
-            Gizmos.DrawLine(new Vector3(points[0].x, 1, points[0].z), new Vector3(points[1].x, 1, points[1].z));
-        }
-
-        foreach (Square[] points in roomsConnected)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(new Vector3(points[0].x, 1, points[0].z), new Vector3(points[1].x, 1, points[1].z));
+            foreach (Square[] points in roomsConnected)
+            {
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawLine(new Vector3(points[0].x, 1, points[0].z), new Vector3(points[1].x, 1, points[1].z));
+            }
         }
     }
 

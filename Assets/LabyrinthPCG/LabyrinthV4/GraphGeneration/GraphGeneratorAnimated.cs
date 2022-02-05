@@ -283,7 +283,7 @@ public class GraphGeneratorAnimated : MonoBehaviour
         }
 
         //destroy, if necessary, all the cubes and edges created
-        /*
+        
         foreach(GameObject g in cubesList)
         {
             Destroy(g);
@@ -291,7 +291,7 @@ public class GraphGeneratorAnimated : MonoBehaviour
         foreach (GameObject g in linesList)
         {
             Destroy(g);
-        }*/
+        }
 
         //the last thing to do is to pass the control to the flockAStar component
         flockAStar.GetComponent<FlockAStar>().myInitialize(graph);
