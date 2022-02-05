@@ -27,9 +27,9 @@ public class FlockAStar : MonoBehaviour
 
     //The exit is at a known position, and I have decided that it will always be the room on the upper right room.
     //To make the path long, but always a bit random, we'll choose, as starting room, one on the left side of the dungeon.
-    GNode end;
-    GNode start;
-    Graph graph;
+    private GNode end;
+    private GNode start;
+    public static Graph graph;
 
     //this still has some informations we need
     private LabyrinthGenerator4Animated c;
@@ -62,8 +62,8 @@ public class FlockAStar : MonoBehaviour
         //If instead the dungeon was big enough, select starting room randomly from the ones on the left
         start = startCandidates[Random.Range(0, startCandidates.Count)];
 
-        Debug.Log("Exit: z = " + end.z + ", x = " + end.x);
-        Debug.Log("Start: z = " + start.z + ", x = " + start.x);
+        //Debug.Log("Exit: z = " + end.z + ", x = " + end.x);
+        //Debug.Log("Start: z = " + start.z + ", x = " + start.x);
 
 
         //we can now run A* to find the shortest path from start to end

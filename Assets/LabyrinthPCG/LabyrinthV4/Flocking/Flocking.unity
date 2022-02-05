@@ -1092,13 +1092,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _BoidFOV: 5
-  _BoidSpeed: 20
+  _BoidSpeed: 10
   _AlignComponent: 1
   _CohesionComponent: 1
   _SeparationComponent: 1
   _separationThreshold: 0.5
   _separationRepulsion: 2
-  _AvoidComponent: 0.51
+  _AvoidComponent: 1
   _wallThreshold: 1
   _wallRepulsion: 1
   breath: 0

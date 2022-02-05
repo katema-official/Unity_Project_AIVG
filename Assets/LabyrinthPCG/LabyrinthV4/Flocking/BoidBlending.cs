@@ -47,20 +47,9 @@ public class BoidBlending : MonoBehaviour {
         }
 
 		
-		
-		
 		globalDirection += acc1 + acc2 + acc3 + acc4;
 
 		
-
-		/*
-		foreach (BoidComponent bc in GetComponents<BoidComponent> ()) {
-			Vector3 tmp = bc.GetDirection(neighbors, count);
-			//Debug.Log("bc component = " + bc + ", steering = " + tmp);
-			globalDirection += tmp;
-		}
-		*/
-
 		if (globalDirection != Vector3.zero) {
 			transform.rotation = Quaternion.LookRotation ((globalDirection.normalized + transform.forward) / 2f);
 		}
