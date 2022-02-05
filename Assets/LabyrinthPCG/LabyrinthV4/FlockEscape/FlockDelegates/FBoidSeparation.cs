@@ -19,7 +19,7 @@ public class FBoidSeparation : FBoidComponent
 			{
 				tmp = (transform.position - neighbors[i].ClosestPointOnBounds(transform.position));
 				separation += tmp.normalized / (tmp.magnitude + 0.0001f);
-				if (tmp.magnitude < FBoidShared.separationThreshold)
+				if (tmp.magnitude < FBoidShared.separationDistance)
 				{
 					tooCloseToOtherBoid = true;
 				}

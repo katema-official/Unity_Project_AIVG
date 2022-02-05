@@ -23,8 +23,8 @@ public class FBoidShared : MonoBehaviour
 	public static float SeparationComponent = 0f;
 
 	//threshold that we use to check if two boids are too close
-	public float _separationThreshold = 1f;
-	public static float separationThreshold = 0f;
+	public float _separationDistance = 1f;
+	public static float separationDistance = 0f;
 
 	//repulsion factor for when we want to heavily separate the boids
 	public float _separationRepulsion = 1f;
@@ -62,7 +62,7 @@ public class FBoidShared : MonoBehaviour
 		CohesionComponent = _CohesionComponent;
 		SeparationComponent = _SeparationComponent;
 
-		separationThreshold = _separationThreshold;
+		separationDistance = _separationDistance;
 		separationRepulsion = _separationRepulsion;
 
 		AvoidComponent = _AvoidComponent;

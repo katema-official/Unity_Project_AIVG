@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7740317417333425360}
   - component: {fileID: 6759683575682280560}
   - component: {fileID: 6971996487827477009}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: DungeonPlane
   m_TagString: Untagged
   m_Icon: {fileID: 0}

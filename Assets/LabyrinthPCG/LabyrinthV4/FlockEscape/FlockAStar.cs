@@ -115,6 +115,7 @@ public class FlockAStar : MonoBehaviour
             yield return null;
         }
 
+
         if (boid != null)
         {
             for (int i = 0; i < count; i += 1)
@@ -122,7 +123,7 @@ public class FlockAStar : MonoBehaviour
                 GameObject go = Instantiate(boid);
                 go.transform.position = new Vector3(
                     (path[0].from.x + c.unitScale/2) + Random.Range(-radius, radius), 
-                    c.heightOfWalls / 2,
+                    0,
                     (path[0].from.z + c.unitScale / 2) + Random.Range(-radius, radius));
                 //go.transform.LookAt(transform.position + Random.insideUnitSphere * radius);
                 go.name = boid.name + " " + i;
