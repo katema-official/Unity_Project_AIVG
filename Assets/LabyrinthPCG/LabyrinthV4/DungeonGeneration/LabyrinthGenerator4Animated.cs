@@ -5,7 +5,7 @@ using PartitioningTree4;
 
 public class LabyrinthGenerator4Animated : MonoBehaviour
 {
-    private bool debug = false;
+    private bool debug = true;
 
     //object that is responsible for the creation of the graph representing the dungeon
     private GameObject graphGenerator;
@@ -464,7 +464,7 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
                 break;
 
             case PTConstants.verticalCutID:
-                corridorWidth = Random.Range(minimumVerticalCorridorWidth, maximumVerticalCorridorWitdh + 1);
+                corridorWidth = Random.Range(minimumHorizontalCorridorWidth, maximumHorizontalCorridorWitdh + 1);
                 corridorWidth = Mathf.Clamp(corridorWidth, 0, leftChildRoomPoints[1].x - leftChildRoomPoints[0].x);
 
                 minSearch = Mathf.Min(leftChildRoomPoints[0].x, leftChildRoomPoints[1].x,

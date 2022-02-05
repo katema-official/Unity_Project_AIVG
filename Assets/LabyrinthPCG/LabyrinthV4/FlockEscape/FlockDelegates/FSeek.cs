@@ -13,19 +13,22 @@ public class FSeek : FBoidComponent
 
     private Vector3 toVector = Vector3.zero;
     private Vector3 seek;
+    private bool reached = false;
 
     public override Vector3 GetDirection(Collider[] neighbors, int size)
     {
-
         target = FlockAStar.path[i].to;
         toVector.x = target.x;
         toVector.y = transform.position.y;
         toVector.z = target.z;
 
         //if I've reached the end (the very last "to" node of the path) then I have nothing to seek anymore
-        if (i == FlockAStar.path.Length - 1  && (transform.position - toVector).magnitude <= FlockAStar.NodeReachedThreshold){
-            return Vector3.zero;
+        if (i == FlockAStar.path.Length - 1 && (transform.position - toVector).magnitude <= FlockAStar.NodeReachedThreshold)
+        {
+            reached = true;
         }
+
+        if (reached) return Vector3.zero;
 
         //Let's see: are we close enough to the target node?
         //Yes: then the "to" node of the next edge is our target.
