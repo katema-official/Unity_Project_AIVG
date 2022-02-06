@@ -158,7 +158,7 @@ MonoBehaviour:
   intersectionMaterial: {fileID: 2100000, guid: b48e76431b8fb584a9ad1ff95083479d, type: 2}
   corridorMaterial: {fileID: 2100000, guid: 10cd3940d54e95b4ab986861fbd7ff92, type: 2}
   delayInGeneration: 0.1
-  _animated: 1
+  _animated: 0
   unitNodes: {fileID: 3264315968576971853, guid: 0a40876afda034444b03bc67e88ad824, type: 3}
   edgeObject: {fileID: 7670160709759333582, guid: 94c1d98f5bdaaa7418911c3ee55f50dc, type: 3}
 --- !u!4 &224480330
@@ -432,17 +432,17 @@ MonoBehaviour:
   unit: {fileID: 3426741760763179013, guid: b885306ce5789f2418553073ce2aa4dd, type: 3}
   wallsMaterial: {fileID: 2100000, guid: e84e7e5aa3e78aa4ba4d7034f224b526, type: 2}
   heightOfWalls: 8
-  unitScale: 5
+  unitScale: 1
   z0: 0
   x0: 0
   width: 20
-  height: 20
+  height: 100
   smallestPartitionZ: 10
   smallestPartitionX: 10
   roomsMustBeSeparated: 1
   minimumRoomZ: 5
   minimumRoomX: 5
-  RandomSeed: -286606738
+  RandomSeed: 0
   minimumHorizontalCorridorWidth: 2
   maximumHorizontalCorridorWitdh: 3
   minimumVerticalCorridorWidth: 2
@@ -527,15 +527,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _BoidFOV: 5
-  _BoidSpeed: 5
+  _BoidSpeed: 10
   _AlignComponent: 1
   _CohesionComponent: 1
   _SeparationComponent: 1
   _separationDistance: 1
-  _separationRepulsion: 1.2
+  _separationRepulsion: 2
   _AvoidComponent: 1
   _wallThreshold: 1
-  _wallRepulsion: 2
+  _wallRepulsion: 3
   breath: 0
   amplitude: 0.1
   speed: 1

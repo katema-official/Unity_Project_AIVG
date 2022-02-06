@@ -5,7 +5,7 @@ using PartitioningTree4;
 
 public class LabyrinthGenerator4Animated : MonoBehaviour
 {
-    private bool debug = true;
+    private bool debug = false;
 
     //object that is responsible for the creation of the graph representing the dungeon
     private GameObject graphGenerator;
@@ -581,11 +581,16 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
         {
             //let's check the following walls to see if we still need to dig (true = there is a full space, false = it is empty)
             c = 0;
+
+            string s = "";
             for (int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++)
             {
                 finished[c] = wallsArrayBitmap[columnIndex, x] == 1 ? true : false;
+                s += wallsArrayBitmap[columnIndex, x];
+
                 c++;
             }
+            
 
             if (!MyUtility.boolContains(finished, true))
             {
@@ -622,7 +627,7 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
             }
 
             //if we are trying to dig outside the dungeon, then we have finished
-            if (x < 0 || x > width - 1)
+            if (x < 0 || x > height - 1)
             {
                 reached = true;
             }
@@ -722,7 +727,7 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
                 z += offset;
             }
 
-            if (z < 0 || z > height - 1)
+            if (z < 0 || z > width - 1)
             {
                 reached = true;
             }
