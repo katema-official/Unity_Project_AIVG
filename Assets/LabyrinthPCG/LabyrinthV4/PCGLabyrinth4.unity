@@ -442,7 +442,7 @@ MonoBehaviour:
   roomsMustBeSeparated: 1
   minimumRoomZ: 5
   minimumRoomX: 5
-  RandomSeed: 0
+  RandomSeed: 413145720
   minimumHorizontalCorridorWidth: 2
   maximumHorizontalCorridorWitdh: 3
   minimumVerticalCorridorWidth: 2
@@ -527,7 +527,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _BoidFOV: 5
-  _BoidSpeed: 10
+  _BoidSpeed: 5
   _AlignComponent: 1
   _CohesionComponent: 1
   _SeparationComponent: 1

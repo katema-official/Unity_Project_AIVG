@@ -40,7 +40,6 @@ public class FSeek : FBoidComponent
             toVector.x = target.x;
             toVector.y = transform.position.y;
             toVector.z = target.z;
-            
         }
 
         seek = (toVector - transform.position).normalized;
