@@ -15,3 +15,8 @@ Assets/Scenes/
 Assets/Spawner/
 Assets/*meta
 !Assets/LabyrinthPCG.meta
+Assets/LabyrinthV1/
+Assets/LabyrinthV2/
+Assets/LabyrinthV3/
+Assets/*meta
+!Assets/LabyrinthV4.meta
