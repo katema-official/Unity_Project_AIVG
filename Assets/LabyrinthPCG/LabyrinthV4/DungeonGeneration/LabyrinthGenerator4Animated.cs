@@ -91,10 +91,10 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
 
         dungeonQueue = new Queue();
         wallsArray = new GameObject[width, height];
-        //no 0-dimension rooms allowed
-        if (minimumRoomZ <= 0 || minimumRoomX <= 0)
+        //rooms too small are not allowed
+        if (minimumRoomZ <= 1 || minimumRoomX <= 1)
         {
-            UnityEditor.EditorUtility.DisplayDialog("Error", "The minimum room dimension must be > 0", "OK");
+            UnityEditor.EditorUtility.DisplayDialog("Error", "The minimum room dimension must be > 1", "OK");
             return;
         }
 

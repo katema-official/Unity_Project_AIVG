@@ -4,7 +4,7 @@ using UnityEngine;
 
 
 
-public class RotateWithMouse : MonoBehaviour
+public class CameraMovementLabyrinth : MonoBehaviour
 {
     public float RotationSpeed = 5;
     public float XMovementSpeedFraction = 5;
@@ -18,24 +18,21 @@ public class RotateWithMouse : MonoBehaviour
         {
 
             transform.eulerAngles += RotationSpeed * new Vector3(-Input.GetAxis("Mouse Y"), Input.GetAxis("Mouse X"), 0);
-
-            //transform.Rotate(transform.up ,-Input.GetAxis("Mouse X") * Speed  ); //1
         }
 
-        //ora provo a muovere la camera
         //Source: https://answers.unity.com/questions/352235/moving-camera-with-wasd.html
         float xAxisValue = Input.GetAxis("Horizontal");
         float zAxisValue = Input.GetAxis("Vertical");
-        transform.Translate(new Vector3(xAxisValue/XMovementSpeedFraction, 0.0f, zAxisValue/ZMovementSpeedFraction));
+        transform.Translate(new Vector3(xAxisValue / XMovementSpeedFraction, 0.0f, zAxisValue / ZMovementSpeedFraction));
 
-        //Io però al voglio muovere anche su e giù
+        //To move up and down
         if (Input.GetKey(KeyCode.Space))
         {
-            transform.Translate(0, YMovementSpeed/10, 0);
+            transform.Translate(0, YMovementSpeed / 10, 0);
         }
         else if (Input.GetKey(KeyCode.LeftShift))
         {
-            transform.Translate(0, - YMovementSpeed/10, 0);
+            transform.Translate(0, -YMovementSpeed / 10, 0);
         }
 
 
