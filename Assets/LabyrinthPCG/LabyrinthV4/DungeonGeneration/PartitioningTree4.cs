@@ -74,33 +74,6 @@ namespace PartitioningTree4
     }
 
 
-
-    //class used for allowing negative index bidimensional arrays of GameObjects
-    public class MyArray2OfGameObjects
-    {
-
-        private GameObject[,] data;
-        private int offsetZ;
-        private int offsetX;
-
-        public MyArray2OfGameObjects(int minimumZ, int maximumZ, int minimumX, int maximumX)
-        {
-            data = new GameObject[maximumZ - minimumZ, maximumX - minimumX];
-            offsetZ = 0 - minimumZ;
-            offsetX = 0 - minimumX;
-        }
-
-        public GameObject get(int z, int x)
-        {
-            return data[z + offsetZ, x + offsetX];
-        }
-
-        public void set(int z, int x, GameObject obj)
-        {
-            data[z + offsetZ, x + offsetX] = obj;
-        }
-    }
-
     enum Directions
     {
         up,

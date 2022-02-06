@@ -268,7 +268,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 942056818}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5b7cda228a3ad704ea6314addf7f7fc1, type: 3}
+  m_Script: {fileID: 11500000, guid: 0a9afec4d4cfee44b8d599a6286da997, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   RotationSpeed: 5
@@ -400,7 +400,7 @@ MonoBehaviour:
   floor: {fileID: 481364124727068938, guid: 500b76417f90693438b2e86ab6ad433e, type: 3}
   unit: {fileID: 3426741760763179013, guid: b885306ce5789f2418553073ce2aa4dd, type: 3}
   wallsMaterial: {fileID: 2100000, guid: e84e7e5aa3e78aa4ba4d7034f224b526, type: 2}
-  heightOfWalls: 8
+  heightOfWalls: 5
   unitScale: 3
   z0: 0
   x0: 0
@@ -408,14 +408,14 @@ MonoBehaviour:
   height: 100
   smallestPartitionZ: 20
   smallestPartitionX: 20
-  roomsMustBeSeparated: 0
-  minimumRoomZ: 10
-  minimumRoomX: 10
+  roomsMustBeSeparated: 1
+  minimumRoomZ: 5
+  minimumRoomX: 5
   RandomSeed: 0
-  minimumHorizontalCorridorWidth: 5
-  maximumHorizontalCorridorWitdh: 6
-  minimumVerticalCorridorWidth: 4
-  maximumVerticalCorridorWitdh: 7
+  minimumHorizontalCorridorWidth: 3
+  maximumHorizontalCorridorWitdh: 3
+  minimumVerticalCorridorWidth: 3
+  maximumVerticalCorridorWitdh: 3
   delayInGeneration: 0.1
   animated: 0
 --- !u!4 &1181948451
@@ -479,7 +479,7 @@ MonoBehaviour:
   _NodeReachedThreshold: 1
   _SeekComponent: 1
   radius: 1
-  count: 5
+  count: 100
   boid: {fileID: 8563003959428047140, guid: 6d2a2828e1ed1dd48b34f1f75cfd2797, type: 3}
   _stopAtFirstHit: 0
   heuristicToUse: 0
@@ -505,6 +505,6 @@ MonoBehaviour:
   _AvoidComponent: 1
   _wallThreshold: 1
   _wallRepulsion: 3
-  breath: 1
+  breath: 0
   amplitude: 0.1
   speed: 1

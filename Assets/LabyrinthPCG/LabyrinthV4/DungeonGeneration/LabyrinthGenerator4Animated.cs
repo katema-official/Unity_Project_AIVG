@@ -76,25 +76,12 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
     private void Start()
     {
         graphGenerator = GameObject.Find("GraphGenerator");
-
-        //create the floor
-        GameObject f = Instantiate(floor);
-        f.transform.position = new Vector3((x0 + height / 2)*unitScale, -(unit.transform.localScale.y * heightOfWalls)/2 - 0.01f, (z0 + width / 2)* unitScale);
-        f.transform.localScale = new Vector3(f.transform.localScale.x * height * unitScale, f.transform.localScale.y, f.transform.localScale.z * width * unitScale);
-
-        //create the roof
-        GameObject r = Instantiate(floor);
-        r.transform.position = new Vector3((x0 + height / 2) * unitScale, (unit.transform.localScale.y*heightOfWalls)/2 + 0.01f, (z0 + width / 2) * unitScale);
-        r.transform.localScale = new Vector3(r.transform.localScale.x * height * unitScale, r.transform.localScale.y, r.transform.localScale.z * width * unitScale);
-        r.transform.Rotate(180, 0, 0);
-
-
         dungeonQueue = new Queue();
         wallsArray = new GameObject[width, height];
         //rooms too small are not allowed
-        if (minimumRoomZ <= 1 || minimumRoomX <= 1)
+        if (minimumRoomZ <= 2 || minimumRoomX <= 2)
         {
-            UnityEditor.EditorUtility.DisplayDialog("Error", "The minimum room dimension must be > 1", "OK");
+            UnityEditor.EditorUtility.DisplayDialog("Error", "The minimum room dimension must be > 2", "OK");
             return;
         }
 
@@ -120,6 +107,17 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
             UnityEditor.EditorUtility.DisplayDialog("Error", "The minimum width for a corridor can't be more than the maximum width for a corridor", "OK");
             return;
         }
+
+        //create the floor
+        GameObject f = Instantiate(floor);
+        f.transform.position = new Vector3((x0 + height / 2) * unitScale, -(unit.transform.localScale.y * heightOfWalls) / 2 - 0.01f, (z0 + width / 2) * unitScale);
+        f.transform.localScale = new Vector3(f.transform.localScale.x * height * unitScale, f.transform.localScale.y, f.transform.localScale.z * width * unitScale);
+
+        //create the roof
+        GameObject r = Instantiate(floor);
+        r.transform.position = new Vector3((x0 + height / 2) * unitScale, (unit.transform.localScale.y * heightOfWalls) / 2 + 0.01f, (z0 + width / 2) * unitScale);
+        r.transform.localScale = new Vector3(r.transform.localScale.x * height * unitScale, r.transform.localScale.y, r.transform.localScale.z * width * unitScale);
+        r.transform.Rotate(180, 0, 0);
 
         //for being stochastic or deterministic
         if (RandomSeed == 0) RandomSeed = (int)System.DateTime.Now.Ticks;
@@ -295,7 +293,7 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
             //respects all the constrains we might have (roomsMustBeSeparated, minimumRoomZ
             //and minimumRoomX).
             //let's then write two functions (both will work for the Z and X coordinate):
-            //1) one that tells us where is the upper-left coordinate of the point
+            //1) one that tells us where is the upper-left coordinate of the room
             //2) one that tells us its length in a certain axis
 
             //To generate a room, we pick two random points inside the given area.
@@ -305,7 +303,7 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
 
             //Actually there are other constrains. The room generated must be large enough to cover at least 1/4 of
             //the partition given in order to make sure it will be possible to connect this room to the other.
-            //This is way our algorithm will always prefer rooms large as required by the user, but, if necessary,
+            //This way our algorithm will always prefer rooms large as required by the user, but, if necessary,
             //will generate smaller rooms.
             int generationAreaZ;
             int generationAreaX;
@@ -377,7 +375,7 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
         {
             maxValue -= 1;
         }
-        //the length of the room has a minimum, and the maximum possible value is the distance between the startingPoint
+        //the length of the room has a minimum, and the maximum possible value is the distance between the startingPoint and the maxValue
         int ret = Random.Range(minLength, Mathf.Abs(maxValue - startingValue) + 1);
 
         //we make sure the length is not too much
