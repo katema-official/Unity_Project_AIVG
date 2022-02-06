@@ -6,3 +6,12 @@ UserSettings
 .vsconfig
 Assembly-CSharp.csproj
 Unity_Project_AIVG.sln
+Assets/Camera
+Assets/Cubetti*saltellanti
+Assets/Materials
+Assets/Pavimento
+Assets/Proiettili
+Assets/Scenes
+Assets/Spawner
+Assets/*meta
+!Assets/LabyrinthPCG.meta
