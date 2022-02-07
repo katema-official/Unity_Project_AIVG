@@ -1096,7 +1096,7 @@ MonoBehaviour:
   _AlignComponent: 1
   _CohesionComponent: 1
   _SeparationComponent: 1
-  _separationThreshold: 0.5
+  _separationThreshold: 1
   _separationRepulsion: 2
   _AvoidComponent: 1
   _wallThreshold: 1

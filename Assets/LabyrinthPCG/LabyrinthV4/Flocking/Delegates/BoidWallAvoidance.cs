@@ -8,7 +8,7 @@ public class BoidWallAvoidance : BoidComponent
 	//boolean used to know if we are extremely close to a wall
 	public bool tooCloseToWall = false;
 
-    public override Vector3 GetDirection(Collider[] neighbors, int size)
+    override public Vector3 GetDirection (Collider[] neighbors, int size)
     {
 		tooCloseToWall = false;
         Vector3 avoid = Vector3.zero;
