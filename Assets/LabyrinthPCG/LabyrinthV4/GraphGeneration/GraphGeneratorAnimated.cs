@@ -65,11 +65,14 @@ public class GraphGeneratorAnimated : MonoBehaviour
     //functions that will be used by other classes to modify the graph we are building
     public void addNode(int z, int x, int type)
     {
-        GNode n = new GNode(z * c.unitScale + (c.unitScale/2), x * c.unitScale + (c.unitScale / 2));
+        float zz = z * c.unitScale + (c.unitScale / 2);
+        float xx = x * c.unitScale + (c.unitScale / 2);
+        GNode n;
         switch (type)
         {
             //it's a room, add the node
             case 0:
+                n = new GNode(zz, xx);
                 n.is_room = true;
                 graph.AddNode(n);
                 nodesList.Add(n);
@@ -82,7 +85,7 @@ public class GraphGeneratorAnimated : MonoBehaviour
                 bool added = false;
                 foreach(GNode nn in nodes)
                 {
-                    if(nn.z == z && nn.x == x)
+                    if(nn.z == zz && nn.x == xx)
                     {
                         nn.is_corridor_entrance = true;
                         added = true;
@@ -90,6 +93,7 @@ public class GraphGeneratorAnimated : MonoBehaviour
                 }
                 if (!added)
                 {
+                    n = new GNode(zz, xx);
                     n.is_corridor_entrance = true;
                     graph.AddNode(n);
                     nodesList.Add(n);
@@ -168,6 +172,8 @@ public class GraphGeneratorAnimated : MonoBehaviour
 
     private void findIntersections()
     {
+        float zz;
+        float xx;
         //we search among all the points with value 0 in the bitmap
         for(int j = 0; j< c.height; j++)
         {
@@ -175,10 +181,12 @@ public class GraphGeneratorAnimated : MonoBehaviour
             {
                 //if the bitmap value is 0, it is a corridor and must be checked.
                 //we must also check that, in that position, there isn't a corridor entrance.
-                if(corridorBitmap[i,j] == 0 && graph.isNodeAtCoordinates(i,j) == false)
+                zz = i * c.unitScale + (c.unitScale / 2);
+                xx = j * c.unitScale + (c.unitScale / 2);
+                if (corridorBitmap[i,j] == 0 && graph.isNodeAtCoordinates(zz,xx) == false)
                 {
-                    int cubesVisible = lookAround(i, j, dungeonBitmap);
-                    GNode n = new GNode(i * c.unitScale + (c.unitScale / 2), j * c.unitScale + (c.unitScale / 2));
+                    int cubesVisible = lookAround(i, j, zz, xx);
+                    GNode n = new GNode(zz, xx);
                     if (cubesVisible >= 3)
                     {
                         n.is_intersection = true;
@@ -198,62 +206,66 @@ public class GraphGeneratorAnimated : MonoBehaviour
     //function used by FindIntersections to see how many cubes (or rather, how many roomNodes/CorridorEntranceNodes/IntersectionNodes)
     //are around him. This function will look in all the four cardinal directions in respect to the given coordinates, see if one of those cubes is
     //visible (one is enough, if i.e. there are two on the north we are not interesed in the second) and add 1 to the result.
-    private int lookAround(int z, int x, int[,] normalBitmap)
+    private int lookAround(int i, int j, float z, float x)
     {
         int res = 0;
-        res += lookUp(z, x, normalBitmap);
-        res += lookDown(z, x, normalBitmap);
-        res += lookRight(z, x, normalBitmap);
-        res += lookLeft(z, x, normalBitmap);
+        res += lookUp(i, j, z, x);
+        res += lookDown(i, j, z, x);
+        res += lookRight(i, j, z, x);
+        res += lookLeft(i, j, z, x);
         return res;
     }
 
     //functions used to look in the four cardinal directions by LookAround
-    private int lookUp(int z, int x, int[,] normalBitmap)
+    private int lookUp(int i, int j, float z, float x)
     {
         while (true)
         {
-            x = x - 1;
+            x = x - c.unitScale;
+            j = j - 1;
             //first of all, check if we went outside of the dungeon
-            if (x < 0) return 0;
+            if (j < 0) return 0;
             //then, we want to check if there is a node at this coordinates.
             //if there is,then yes, a node is visible in this direction.
             if (graph.isNodeAtCoordinates(z, x)) return 1;
             //if not, check: is this a wall, for our bitmap?
-            if(normalBitmap[z,x] == 1) return 0;
+            if(dungeonBitmap[i,j] == 1) return 0;
         }
     }
 
-    private int lookDown(int z, int x, int[,] normalBitmap)
+    private int lookDown(int i, int j, float z, float x)
     {
         while (true)
         {
-            x = x + 1;
-            if (x >= c.height) return 0;
+            x = x + c.unitScale;
+            j = j + 1;
+            if (j >= c.height) return 0;
             if (graph.isNodeAtCoordinates(z, x)) return 1;
-            if (normalBitmap[z, x] == 1)return 0;
+            if (dungeonBitmap[i,j] == 1) return 0;
         }
     }
 
-    private int lookLeft(int z, int x, int[,] normalBitmap)
+    private int lookLeft(int i, int j, float z, float x)
     {
         while (true)
         {
-            z = z - 1;
-            if (z < 0) return 0;
+            z = z - c.unitScale;
+            i = i - 1;
+            if (i < 0) return 0;
             if (graph.isNodeAtCoordinates(z, x)) return 1;
-            if (normalBitmap[z, x] == 1) return 0;
+            if (dungeonBitmap[i,j] == 1) return 0;
         }
     }
 
-    private int lookRight(int z, int x, int[,] normalBitmap)
+    private int lookRight(int i, int j, float z, float x)
     {
         while (true)
         {
-            z = z + 1;
-            if (z >= c.width) return 0;
+            z = z + c.unitScale;
+            i = i + 1;
+            if (i >= c.width) return 0;
             if (graph.isNodeAtCoordinates(z, x)) return 1;
-            if (normalBitmap[z, x] == 1) return 0;
+            if (dungeonBitmap[i,j] == 1) return 0;
         }
     }
 
@@ -334,10 +346,4 @@ public class GraphGeneratorAnimated : MonoBehaviour
         }
     }
 
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

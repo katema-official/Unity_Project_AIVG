@@ -537,6 +537,9 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
     {
         if (listOfAvailableCoordinates[0] > rightBound - requiredWidth)
         {
+            //if the required corridor width is so big that it can't fit inside the space given by the common cordinates,
+            //the right wall of the room is used to calculate the left wall. We are sure that the required width will be less
+            //then the room size along the Z axis thanks to the clamp we did before calling this function.
             return new int[] { rightBound - requiredWidth, rightBound };
         }
 
@@ -579,13 +582,9 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
         {
             //let's check the following walls to see if we still need to dig (true = there is a full space, false = it is empty)
             c = 0;
-
-            string s = "";
             for (int columnIndex = boundaryCoordinates[0]; columnIndex < boundaryCoordinates[1]; columnIndex++)
             {
                 finished[c] = wallsArrayBitmap[columnIndex, x] == 1 ? true : false;
-                s += wallsArrayBitmap[columnIndex, x];
-
                 c++;
             }
             

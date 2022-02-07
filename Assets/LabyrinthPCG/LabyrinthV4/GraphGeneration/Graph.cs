@@ -43,7 +43,7 @@ public class Graph
 	}
 
 	//function to check if at given coordinates there is a node
-	public bool isNodeAtCoordinates(int z, int x)
+	public bool isNodeAtCoordinates(float z, float x)
     {
 		foreach(GNode n in getNodes())
         {
@@ -53,7 +53,7 @@ public class Graph
     }
 
 	//function used to get a node at some given coordinates
-	public GNode getNodeAtCoordinates(int z, int x)
+	public GNode getNodeAtCoordinates(float z, float x)
     {
 		foreach (GNode n in getNodes())
 		{
@@ -62,7 +62,7 @@ public class Graph
 		return null;
 	}
 
-	//function used to check if there is and edge between two nodes (sueful for animation)
+	//function used to check if there is and edge between two nodes (useful for animation)
 	public bool areNodesConnected(GNode f, GNode t)
     {
 		foreach(GEdge e in getConnections(f))
