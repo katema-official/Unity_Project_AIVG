@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class Graph
 {
@@ -70,6 +71,32 @@ public class Graph
 			if(e.to == t) { return true; }
         }
 		return false;
+    }
+
+	//used by the function below
+	private float distance(float z1, float x1, float z2, float x2)
+	{
+		return (Mathf.Sqrt(Mathf.Pow(Mathf.Abs(z1 - z2),2) + Mathf.Pow(Mathf.Abs(x1 - x2), 2)));
+	}
+
+	//to add a node and find out his edges (used by FSeek)
+	public void addNodeAndFindEdges(GNode n)
+    {
+		AddNode(n);
+		foreach(GNode other in getNodes())
+        {
+			if (n != other)
+			{
+				bool isThereWall = Physics.Raycast(new Vector3(n.x, 0, n.z),
+							(new Vector3(other.x, 0, other.z) - new Vector3(n.x, 0, n.z)).normalized,
+							(new Vector3(other.x, 0, other.z) - new Vector3(n.x, 0, n.z)).magnitude,
+							(1 << 6));
+				if (!isThereWall)
+				{
+					AddEdge(new GEdge(n, other, distance(n.z, n.x, other.z, other.x)));
+				}
+			}
+		}
     }
 
 }

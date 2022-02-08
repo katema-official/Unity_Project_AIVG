@@ -49,9 +49,6 @@ public class FBoidBlending : MonoBehaviour
 		//that the user specified for me)
 		acc4 = acc4 * FBoidShared.wallRepulsion;
 
-		//if (acc4 != Vector3.zero)
-		//{
-
 		if (separation.tooCloseToOtherBoid)
 		{
 			//if I am too close to another boid, I want to get repulsed a lot from it
@@ -59,11 +56,6 @@ public class FBoidBlending : MonoBehaviour
 		}
 
 		globalDirection += acc1 + acc2 + acc3 + acc4 + acc5;
-        //}
-        //else
-        //{
-		//	globalDirection = acc4;
-        //}
 
 		if (globalDirection != Vector3.zero)
 		{

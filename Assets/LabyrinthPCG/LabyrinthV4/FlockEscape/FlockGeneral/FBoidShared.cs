@@ -4,6 +4,11 @@ using UnityEngine;
 
 public class FBoidShared : MonoBehaviour
 {
+	//debug
+	public static bool debug = true;
+	public string _debugNumberBoid = "0";
+	public static string debugNumberBoid = "0";
+
 
 	[Range(0f, 10f)] public float _BoidFOV = 2f;
 	public static float BoidFOW = 0f;
@@ -56,6 +61,8 @@ public class FBoidShared : MonoBehaviour
 
 	private void OnValidate()
 	{
+		debugNumberBoid = _debugNumberBoid;
+
 		BoidFOW = _BoidFOV;
 		BoidSpeed = _BoidSpeed;
 		AlignComponent = _AlignComponent;

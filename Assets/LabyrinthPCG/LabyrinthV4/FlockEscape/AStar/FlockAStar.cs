@@ -39,10 +39,10 @@ public class FlockAStar : MonoBehaviour
 
     //The exit is at a known position, and I have decided that it will always be the room on the upper right room.
     //To make the path long, but always a bit random, we'll choose, as starting room, one on the left side of the dungeon.
-    private GNode end;
-    private GNode start;
+    public GNode end;
+    public GNode start;
     public Graph graph;
-    public static GEdge[] path;
+    public GEdge[] path;
 
     //this still has some informations we need
     private LabyrinthGenerator4Animated c;
@@ -93,9 +93,6 @@ public class FlockAStar : MonoBehaviour
         //    Debug.Log("z = " + e.to.z + ", x = " + e.to.x);
         //}
 
-
-        //mo devo passare il percorso al seek component di ogni flock (posso renderlo statico?), e probabilmente generare qui (? sì dai) i flock stessi
-
         //we have the path to traverse, now we can create the flocks in the starting room.
         //Now: to make sure that the boids won't be created inside of a wall, a small radius should be used (1, for example).
         //The problem is that if a lot of boids are created at the same time in a small space, we have some lag.
@@ -115,24 +112,20 @@ public class FlockAStar : MonoBehaviour
             yield return null;
         }
 
-
         if (boid != null)
         {
             for (int i = 0; i < count; i += 1)
             {
                 GameObject go = Instantiate(boid);
                 go.transform.position = new Vector3(
-                    (path[0].from.x + c.unitScale/2) + Random.Range(-radius, radius), 
+                    path[0].from.x + Random.Range(-radius, radius), 
                     Random.Range(-c.heightOfWalls/2, c.heightOfWalls/2),
-                    (path[0].from.z + c.unitScale / 2) + Random.Range(-radius, radius));
-                //go.transform.LookAt(transform.position + Random.insideUnitSphere * radius);
+                    path[0].from.z + Random.Range(-radius, radius));
                 go.name = boid.name + " " + i;
             }
         }
 
     }
-
-
 
     private float distanceFromUpperRight(float z, float x)
     {
