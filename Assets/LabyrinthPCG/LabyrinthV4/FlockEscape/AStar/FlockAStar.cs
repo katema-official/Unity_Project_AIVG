@@ -129,7 +129,7 @@ public class FlockAStar : MonoBehaviour
 
     private float distanceFromUpperRight(float z, float x)
     {
-        return (Mathf.Sqrt(Mathf.Pow(c.width * c.unitScale - z, 2) + Mathf.Pow(0 - x, 2)));
+        return (Mathf.Sqrt(Mathf.Pow((c.z0 + (c.width * c.unitScale)) - z, 2) + Mathf.Pow(c.x0 - x, 2)));
     }
 
 

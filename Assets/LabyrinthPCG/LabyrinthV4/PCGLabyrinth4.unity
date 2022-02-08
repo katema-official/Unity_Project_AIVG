@@ -158,7 +158,7 @@ MonoBehaviour:
   intersectionMaterial: {fileID: 2100000, guid: b48e76431b8fb584a9ad1ff95083479d, type: 2}
   corridorMaterial: {fileID: 2100000, guid: 10cd3940d54e95b4ab986861fbd7ff92, type: 2}
   delayInGeneration: 0.001
-  _animated: 1
+  _animated: 0
   unitNodes: {fileID: 3264315968576971853, guid: 0a40876afda034444b03bc67e88ad824, type: 3}
   edgeObject: {fileID: 7670160709759333582, guid: 94c1d98f5bdaaa7418911c3ee55f50dc, type: 3}
 --- !u!4 &224480330
@@ -402,8 +402,8 @@ MonoBehaviour:
   wallsMaterial: {fileID: 2100000, guid: e84e7e5aa3e78aa4ba4d7034f224b526, type: 2}
   heightOfWalls: 5
   unitScale: 3
-  z0: -10
-  x0: -10
+  z0: 0
+  x0: 0
   width: 90
   height: 90
   smallestPartitionZ: 10
@@ -481,7 +481,7 @@ MonoBehaviour:
   radius: 1
   count: 100
   boid: {fileID: 8563003959428047140, guid: 6d2a2828e1ed1dd48b34f1f75cfd2797, type: 3}
-  _stopAtFirstHit: 1
+  _stopAtFirstHit: 0
   heuristicToUse: 3
 --- !u!114 &2040051978
 MonoBehaviour:

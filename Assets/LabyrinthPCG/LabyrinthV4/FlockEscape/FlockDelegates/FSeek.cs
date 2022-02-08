@@ -65,15 +65,6 @@ public class FSeek : FBoidComponent
         {
             i += 1;
             target = path[i].to;
-            //toVector.x = target.x;
-            //toVector.y = transform.position.y;
-            //toVector.z = target.z;
-
-            if (name == "FBoid " + FBoidShared.debugNumberBoid)
-            {
-                Debug.LogFormat("target = ({0},{1})", target.z, target.x);
-            }
-
             StopCoroutine(recalculateCoroutine);
             isCoroutineRunning = false;
         }
@@ -131,22 +122,7 @@ public class FSeek : FBoidComponent
             i = 0;
             target = path[i].to;
         }
-        isCoroutineRunning = false;
-
-        
+        isCoroutineRunning = false;   
     }
-
-
-    private string printMio(GEdge[] array)
-    {
-        string s = "[";
-        foreach(GEdge e in array)
-        {
-            s += "(" + e.to.z + "," + e.to.x + ") - ";
-        }
-        s += "]";
-        return s;
-    }
-
 
 }

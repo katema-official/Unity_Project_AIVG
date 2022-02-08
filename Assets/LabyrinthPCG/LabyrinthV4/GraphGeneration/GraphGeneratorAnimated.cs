@@ -65,8 +65,8 @@ public class GraphGeneratorAnimated : MonoBehaviour
     //functions that will be used by other classes to modify the graph we are building
     public void addNode(int z, int x, int type)
     {
-        float zz = z * c.unitScale + (c.unitScale / 2);
-        float xx = x * c.unitScale + (c.unitScale / 2);
+        float zz = c.z0 + z * c.unitScale + (c.unitScale / 2);
+        float xx = c.x0 + x * c.unitScale + (c.unitScale / 2);
         GNode n;
         switch (type)
         {
@@ -136,7 +136,7 @@ public class GraphGeneratorAnimated : MonoBehaviour
             foreach (GNode n in nodesList)
             {
                 GameObject g = Instantiate(unitNodes);
-                g.transform.position = new Vector3(c.x0 + n.x, 0, c.z0 + n.z);
+                g.transform.position = new Vector3(n.x, 0, n.z);
                 g.transform.localScale = new Vector3(g.transform.localScale.x * c.unitScale, g.transform.localScale.y * c.heightOfWalls, g.transform.localScale.z * c.unitScale);
                 if (n.is_room && n.is_corridor_entrance)
                 {
@@ -181,8 +181,8 @@ public class GraphGeneratorAnimated : MonoBehaviour
             {
                 //if the bitmap value is 0, it is a corridor and must be checked.
                 //we must also check that, in that position, there isn't a corridor entrance.
-                zz = i * c.unitScale + (c.unitScale / 2);
-                xx = j * c.unitScale + (c.unitScale / 2);
+                zz = c.z0 + i * c.unitScale + (c.unitScale / 2);
+                xx = c.x0 + j * c.unitScale + (c.unitScale / 2);
                 if (corridorBitmap[i,j] == 0 && graph.isNodeAtCoordinates(zz,xx) == false)
                 {
                     int cubesVisible = lookAround(i, j, zz, xx);

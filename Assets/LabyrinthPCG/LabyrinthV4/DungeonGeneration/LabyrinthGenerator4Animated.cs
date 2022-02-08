@@ -110,12 +110,12 @@ public class LabyrinthGenerator4Animated : MonoBehaviour
 
         //create the floor
         GameObject f = Instantiate(floor);
-        f.transform.position = new Vector3((x0 + height / 2) * unitScale, -(unit.transform.localScale.y * heightOfWalls) / 2 - 0.01f, (z0 + width / 2) * unitScale);
+        f.transform.position = new Vector3(x0 + (height / 2) * unitScale, -(unit.transform.localScale.y * heightOfWalls) / 2 - 0.01f, z0 + (width / 2) * unitScale);
         f.transform.localScale = new Vector3(f.transform.localScale.x * height * unitScale, f.transform.localScale.y, f.transform.localScale.z * width * unitScale);
 
         //create the roof
         GameObject r = Instantiate(floor);
-        r.transform.position = new Vector3((x0 + height / 2) * unitScale, (unit.transform.localScale.y * heightOfWalls) / 2 + 0.01f, (z0 + width / 2) * unitScale);
+        r.transform.position = new Vector3(x0 + (height / 2) * unitScale, (unit.transform.localScale.y * heightOfWalls) / 2 + 0.01f, z0 + (width / 2) * unitScale);
         r.transform.localScale = new Vector3(r.transform.localScale.x * height * unitScale, r.transform.localScale.y, r.transform.localScale.z * width * unitScale);
         r.transform.Rotate(180, 0, 0);
 
