@@ -115,12 +115,18 @@ public class FSeek : FBoidComponent
         }else if(i < path.Length - 1)
         {
             GNode myPosition = new GNode(transform.position.z, transform.position.x);
-            GNode nextTarget = path[i + 1].to;
             c.graph.addNodeAndFindEdges(myPosition);
-            GEdge[] prePath = AStarSolver.Solve(c.graph, myPosition, nextTarget, c.myHeuristics[(int)c.heuristicToUse]);
-            path = prePath;
-            i = 0;
-            target = path[i].to;
+            GEdge[] prePath = AStarSolver.Solve(c.graph, myPosition, path[path.Length - 1].to, c.myHeuristics[(int)c.heuristicToUse]);
+            if (prePath.Length == 0)
+            {
+                target = path[path.Length - 1].to;
+            }
+            else
+            {
+                path = prePath;
+                i = 0;
+                target = path[i].to;
+            }
         }
         isCoroutineRunning = false;   
     }
